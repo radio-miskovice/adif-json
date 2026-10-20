@@ -1,0 +1,4994 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JSON-native amateur radio interchange document",
+  "description": "Proposed successor format covering all ADIF/ADX 3.1.8 fields. Uses Unicode strings, RFC 3339 dates and UTC times, decimal-degree coordinates, native numbers and booleans, arrays, structured credits, and JSON Schema custom definitions. Legacy field names remain mapped; legacy wire encodings are not retained.",
+  "$comment": "Field inventory source: https://adif.org/318/ADIF_318.htm and https://adif.org.uk/318/resources . ADIF_VER identifies source compatibility, not the version of this proposed format. See README.md for conversion and validation rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "records"
+  ],
+  "properties": {
+    "header": {
+      "$ref": "#/$defs/Header"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Record"
+      }
+    }
+  },
+  "$defs": {
+    "String": {
+      "type": "string"
+    },
+    "IntlString": {
+      "type": "string"
+    },
+    "MultilineString": {
+      "type": "string"
+    },
+    "IntlMultilineString": {
+      "type": "string"
+    },
+    "Boolean": {
+      "type": "boolean"
+    },
+    "Number": {
+      "type": "number"
+    },
+    "Integer": {
+      "type": "integer"
+    },
+    "PositiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "Digit": {
+      "type": "string",
+      "pattern": "^(?:[0-9])$(?![\\s\\S])"
+    },
+    "Character": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1
+    },
+    "IntlCharacter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1
+    },
+    "Enumeration": {
+      "$ref": "#/$defs/String"
+    },
+    "Date": {
+      "description": "RFC 3339 full-date, YYYY-MM-DD. No ADIF-specific 1930 lower bound.",
+      "format": "date",
+      "type": "string",
+      "pattern": "^(?:(?:[0-9]{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29))$(?![\\s\\S])"
+    },
+    "Time": {
+      "description": "RFC 3339 time in UTC, HH:MM:SS[.fraction]Z. Leap-second notation is not supported.",
+      "format": "time",
+      "type": "string",
+      "pattern": "^(?:(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z)$(?![\\s\\S])"
+    },
+    "Timestamp": {
+      "description": "RFC 3339 timestamp in UTC.",
+      "format": "date-time",
+      "type": "string",
+      "pattern": "^(?:(?:[0-9]{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29)T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z)$(?![\\s\\S])"
+    },
+    "GridSquare": {
+      "type": "string",
+      "pattern": "^(?:[A-Ra-r]{2}(?:[0-9]{2}(?:[A-Xa-x]{2}(?:[0-9]{2})?)?)?)$(?![\\s\\S])"
+    },
+    "GridSquareExt": {
+      "type": "string",
+      "pattern": "^(?:[A-Xa-x]{2}(?:[0-9]{2})?)$(?![\\s\\S])"
+    },
+    "GridSquareList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/GridSquare"
+      }
+    },
+    "VUCCGrids": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:[A-Ra-r]{2}[0-9]{2}(?:[A-Xa-x]{2})?)$(?![\\s\\S])"
+      },
+      "maxItems": 4,
+      "oneOf": [
+        {
+          "maxItems": 2
+        },
+        {
+          "minItems": 4
+        }
+      ]
+    },
+    "Latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90,
+      "description": "Decimal degrees; north positive, south negative."
+    },
+    "Longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180,
+      "description": "Decimal degrees; east positive, west negative."
+    },
+    "IOTARefNo": {
+      "type": "string",
+      "pattern": "^(?:(?:[Aa][Ff]|[Aa][Nn]|[Aa][Ss]|[Ee][Uu]|[Nn][Aa]|[Oo][Cc]|[Ss][Aa])-(?!000)[0-9]{3})$(?![\\s\\S])"
+    },
+    "POTARef": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9]{1,4}-[0-9]{4,5}(?:@[A-Za-z]{2}-[A-Za-z0-9]{1,3})?)$(?![\\s\\S])"
+    },
+    "POTARefList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/POTARef"
+      }
+    },
+    "SOTARef": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9]+/[A-Za-z0-9]+-[0-9]+)$(?![\\s\\S])"
+    },
+    "WWFFRef": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9]{1,4}[Ff]{2}-[0-9]{4})$(?![\\s\\S])"
+    },
+    "SecondarySubdivisionList": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "USACACounties": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "county"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z]{2})$(?![\\s\\S])"
+          },
+          "county": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "SecondaryAdministrativeSubdivisionListAlt": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Nn][Oo][Rr][Tt][Hh][Ll][Aa][Nn][Dd]/[Ff][Aa][Rr] [Nn][Oo][Rr][Tt][Hh]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Nn][Oo][Rr][Tt][Hh][Ll][Aa][Nn][Dd]/[Ww][Hh][Aa][Nn][Gg][Aa][Rr][Ee][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Nn][Oo][Rr][Tt][Hh][Ll][Aa][Nn][Dd]/[Kk][Aa][Ii][Pp][Aa][Rr][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Rr][Oo][Dd][Nn][Ee][Yy]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Nn][Oo][Rr][Tt][Hh] [Ss][Hh][Oo][Rr][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Ww][Aa][Ii][Tt][Aa][Kk][Ee][Rr][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Mm][Aa][Nn][Uu][Kk][Aa][Uu]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Pp][Aa][Pp][Aa][Kk][Uu][Rr][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Aa][Uu][Cc][Kk][Ll][Aa][Nn][Dd]/[Ff][Rr][Aa][Nn][Kk][Ll][Ii][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Tt][Hh][Aa][Mm][Ee][Ss]-[Cc][Oo][Rr][Oo][Mm][Aa][Nn][Dd][Ee][Ll]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Hh][Aa][Uu][Rr][Aa][Kk][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Ww][Aa][Ii][Kk][Aa][Tt][Oo]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Mm][Aa][Tt][Aa][Mm][Aa][Tt][Aa] [Pp][Ii][Aa][Kk][Oo]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Hh][Aa][Mm][Ii][Ll][Tt][Oo][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Ww][Aa][Ii][Pp][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Oo][Tt][Oo][Rr][Oo][Hh][Aa][Nn][Gg][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Ss][Oo][Uu][Tt][Hh] [Ww][Aa][Ii][Kk][Aa][Tt][Oo]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Ww][Aa][Ii][Tt][Oo][Mm][Oo]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Ii][Kk][Aa][Tt][Oo]/[Tt][Aa][Uu][Pp][Oo]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]/[Ww][Ee][Ss][Tt][Ee][Rr][Nn] [Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]/[Tt][Aa][Uu][Rr][Aa][Nn][Gg][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]/[Rr][Oo][Tt][Oo][Rr][Uu][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]/[Kk][Aa][Ww][Ee][Rr][Aa][Uu]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]/[Ww][Hh][Aa][Kk][Aa][Tt][Aa][Nn][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Bb][Aa][Yy] [Oo][Ff] [Pp][Ll][Ee][Nn][Tt][Yy]/[Oo][Pp][Oo][Tt][Ii][Kk][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Gg][Ii][Ss][Bb][Oo][Rr][Nn][Ee]/[Gg][Ii][Ss][Bb][Oo][Rr][Nn][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Hh][Aa][Ww][Kk][Ee][Ss] [Bb][Aa][Yy]/[Ww][Aa][Ii][Rr][Oo][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Hh][Aa][Ww][Kk][Ee][Ss] [Bb][Aa][Yy]/[Hh][Aa][Ss][Tt][Ii][Nn][Gg][Ss]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Hh][Aa][Ww][Kk][Ee][Ss] [Bb][Aa][Yy]/[Nn][Aa][Pp][Ii][Ee][Rr]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Hh][Aa][Ww][Kk][Ee][Ss] [Bb][Aa][Yy]/[Cc][Ee][Nn][Tt][Rr][Aa][Ll] [Hh][Aa][Ww][Kk][Ee][Ss] [Bb][Aa][Yy]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Tt][Aa][Rr][Aa][Nn][Aa][Kk][Ii]/[Nn][Ee][Ww] [Pp][Ll][Yy][Mm][Oo][Uu][Tt][Hh]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Tt][Aa][Rr][Aa][Nn][Aa][Kk][Ii]/[Ss][Tt][Rr][Aa][Tt][Ff][Oo][Rr][Dd]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Tt][Aa][Rr][Aa][Nn][Aa][Kk][Ii]/[Ss][Oo][Uu][Tt][Hh] [Tt][Aa][Rr][Aa][Nn][Aa][Kk][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Rr][Uu][Aa][Pp][Ee][Hh][Uu]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Rr][Aa][Nn][Gg][Ii][Tt][Ii][Kk][Ee][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Pp][Aa][Ll][Mm][Ee][Rr][Ss][Tt][Oo][Nn] [Nn][Oo][Rr][Tt][Hh]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Hh][Oo][Rr][Oo][Ww][Hh][Ee][Nn][Uu][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Aa][Nn][Gg][Aa][Nn][Uu][Ii]-[Mm][Aa][Nn][Aa][Ww][Aa][Tt][Uu]/[Tt][Aa][Rr][Aa][Rr][Uu][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Mm][Aa][Ss][Tt][Ee][Rr][Tt][Oo][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Cc][Aa][Rr][Tt][Ee][Rr][Tt][Oo][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Ss][Oo][Uu][Tt][Hh] [Ww][Aa][Ii][Rr][Aa][Rr][Aa][Pp][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Kk][Aa][Pp][Ii][Tt][Ii] [Cc][Oo][Aa][Ss][Tt]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Pp][Oo][Rr][Ii][Rr][Uu][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Uu][Pp][Pp][Ee][Rr] [Hh][Uu][Tt][Tt]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Ll][Oo][Ww][Ee][Rr] [Hh][Uu][Tt][Tt]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]/[Ww][Ee][Ll][Ll][Ii][Nn][Gg][Tt][Oo][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Nn][Ee][Ll][Ss][Oo][Nn]/[Nn][Ee][Ll][Ss][Oo][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Mm][Aa][Rr][Ll][Bb][Oo][Rr][Oo][Uu][Gg][Hh]/[Mm][Aa][Rr][Ll][Bb][Oo][Rr][Oo][Uu][Gg][Hh]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Tt][Aa][Ss][Mm][Aa][Nn]/[Tt][Aa][Ss][Mm][Aa][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ss][Tt] [Cc][Oo][Aa][Ss][Tt]/[Bb][Uu][Ll][Ll][Ee][Rr]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ss][Tt] [Cc][Oo][Aa][Ss][Tt]/[Gg][Rr][Ee][Yy]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ww][Ee][Ss][Tt] [Cc][Oo][Aa][Ss][Tt]/[Ww][Ee][Ss][Tt][Ll][Aa][Nn][Dd]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Kk][Aa][Ii][Kk][Oo][Uu][Rr][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Hh][Uu][Rr][Uu][Nn][Uu][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Ss][Ee][Ll][Ww][Yy][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Ww][Aa][Ii][Mm][Aa][Kk][Aa][Rr][Ii][Rr][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Cc][Hh][Rr][Ii][Ss][Tt][Cc][Hh][Uu][Rr][Cc][Hh]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Bb][Aa][Nn][Kk][Ss] [Pp][Ee][Nn][Ii][Nn][Ss][Uu][Ll][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Aa][Ss][Hh][Bb][Uu][Rr][Tt][Oo][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Mm][Aa][Cc][Kk][Ee][Nn][Zz][Ii][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Tt][Ii][Mm][Aa][Rr][Uu]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Cc][Aa][Nn][Tt][Ee][Rr][Bb][Uu][Rr][Yy]/[Ww][Aa][Ii][Mm][Aa][Tt][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Oo][Tt][Aa][Gg][Oo]/[Ww][Aa][Ii][Tt][Aa][Kk][Ii]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Oo][Tt][Aa][Gg][Oo]/[Qq][Uu][Ee][Ee][Nn][Ss][Tt][Oo][Ww][Nn]-[Ll][Aa][Kk][Ee][Ss]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Oo][Tt][Aa][Gg][Oo]/[Cc][Ee][Nn][Tt][Rr][Aa][Ll] [Oo][Tt][Aa][Gg][Oo]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Oo][Tt][Aa][Gg][Oo]/[Dd][Uu][Nn][Ee][Dd][Ii][Nn]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Oo][Tt][Aa][Gg][Oo]/[Cc][Ll][Uu][Tt][Hh][Aa]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ss][Oo][Uu][Tt][Hh][Ll][Aa][Nn][Dd]/[Gg][Oo][Rr][Ee]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ss][Oo][Uu][Tt][Hh][Ll][Aa][Nn][Dd]/[Ss][Oo][Uu][Tt][Hh][Ll][Aa][Nn][Dd]|[Nn][Zz]_[Rr][Ee][Gg][Ii][Oo][Nn][Ss]:[Ss][Oo][Uu][Tt][Hh][Ll][Aa][Nn][Dd]/[Ii][Nn][Vv][Ee][Rr][Cc][Aa][Rr][Gg][Ii][Ll][Ll])$(?![\\s\\S])"
+      },
+      "maxItems": 1,
+      "description": "Array of alternate subdivision codes. ADIF 3.1.8 defines only NZ_Regions; at most one entry per enumeration."
+    },
+    "enum_Ant_Path": {
+      "type": "string",
+      "pattern": "^(?:[Gg]|[Oo]|[Ss]|[Ll])$(?![\\s\\S])"
+    },
+    "enum_ARRL_Section": {
+      "type": "string",
+      "pattern": "^(?:[Aa][Ll]|[Aa][Kk]|[Aa][Bb]|[Aa][Rr]|[Aa][Zz]|[Bb][Cc]|[Cc][Oo]|[Cc][Tt]|[Dd][Ee]|[Ee][Bb]|[Ee][Mm][Aa]|[Ee][Nn][Yy]|[Ee][Pp][Aa]|[Ee][Ww][Aa]|[Gg][Aa]|[Gg][Hh]|[Gg][Tt][Aa]|[Ii][Dd]|[Ii][Ll]|[Ii][Nn]|[Ii][Aa]|[Kk][Ss]|[Kk][Yy]|[Ll][Aa][Xx]|[Ll][Aa]|[Mm][Ee]|[Mm][Bb]|[Mm][Aa][Rr]|[Mm][Dd][Cc]|[Mm][Ii]|[Mm][Nn]|[Mm][Ss]|[Mm][Oo]|[Mm][Tt]|[Nn][Ee]|[Nn][Vv]|[Nn][Bb]|[Nn][Hh]|[Nn][Mm]|[Nn][Ll][Ii]|[Nn][Ll]|[Nn][Cc]|[Nn][Dd]|[Nn][Tt][Xx]|[Nn][Ff][Ll]|[Nn][Nn][Jj]|[Nn][Nn][Yy]|[Nn][Tt]|[Nn][Ww][Tt]|[Nn][Ss]|[Oo][Hh]|[Oo][Kk]|[Oo][Nn]|[Oo][Nn][Ee]|[Oo][Nn][Nn]|[Oo][Nn][Ss]|[Oo][Rr][Gg]|[Oo][Rr]|[Pp][Aa][Cc]|[Pp][Ee]|[Pp][Rr]|[Qq][Cc]|[Rr][Ii]|[Ss][Vv]|[Ss][Dd][Gg]|[Ss][Ff]|[Ss][Jj][Vv]|[Ss][Bb]|[Ss][Cc][Vv]|[Ss][Kk]|[Ss][Cc]|[Ss][Dd]|[Ss][Tt][Xx]|[Ss][Ff][Ll]|[Ss][Nn][Jj]|[Tt][Nn]|[Tt][Ee][Rr]|[Vv][Ii]|[Uu][Tt]|[Vv][Tt]|[Vv][Aa]|[Ww][Cc][Ff]|[Ww][Tt][Xx]|[Ww][Vv]|[Ww][Mm][Aa]|[Ww][Nn][Yy]|[Ww][Pp][Aa]|[Ww][Ww][Aa]|[Ww][Ii]|[Ww][Yy])$(?![\\s\\S])"
+    },
+    "enum_Award": {
+      "type": "string",
+      "pattern": "^(?:[Aa][Jj][Aa]|[Cc][Qq][Dd][Xx]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]|[Cc][Qq][Ww][Aa][Zz]_[Mm][Ii][Xx][Ee][Dd]|[Cc][Qq][Ww][Aa][Zz]_[Cc][Ww]|[Cc][Qq][Ww][Aa][Zz]_[Pp][Hh][Oo][Nn][Ee]|[Cc][Qq][Ww][Aa][Zz]_[Rr][Tt][Tt][Yy]|[Cc][Qq][Ww][Aa][Zz]_160[Mm]|[Cc][Qq][Ww][Pp][Xx]|[Dd][Aa][Rr][Cc]_[Dd][Oo][Kk]|[Dd][Xx][Cc][Cc]|[Dd][Xx][Cc][Cc]_[Mm][Ii][Xx][Ee][Dd]|[Dd][Xx][Cc][Cc]_[Cc][Ww]|[Dd][Xx][Cc][Cc]_[Pp][Hh][Oo][Nn][Ee]|[Dd][Xx][Cc][Cc]_[Rr][Tt][Tt][Yy]|[Ii][Oo][Tt][Aa]|[Jj][Cc][Cc]|[Jj][Cc][Gg]|[Mm][Aa][Rr][Aa][Tt][Hh][Oo][Nn]|[Rr][Dd][Aa]|[Ww][Aa][Bb]|[Ww][Aa][Cc]|[Ww][Aa][Ee]|[Ww][Aa][Ii][Pp]|[Ww][Aa][Jj][Aa]|[Ww][Aa][Ss]|[Ww][Aa][Zz]|[Uu][Ss][Aa][Cc][Aa]|[Vv][Uu][Cc][Cc])$(?![\\s\\S])"
+    },
+    "enum_Award_Sponsor": {
+      "type": "string",
+      "pattern": "^(?:[Aa][Dd][Ii][Ff]_|[Aa][Rr][Ii]_|[Aa][Rr][Rr][Ll]_|[Cc][Qq]_|[Dd][Aa][Rr][Cc]_|[Ee][Qq][Ss][Ll]_|[Ii][Aa][Rr][Uu]_|[Jj][Aa][Rr][Ll]_|[Rr][Ss][Gg][Bb]_|[Tt][Aa][Gg]_|[Ww][Aa][Bb][Aa][Gg]_)$(?![\\s\\S])"
+    },
+    "enum_Band": {
+      "type": "string",
+      "pattern": "^(?:2190[Mm]|630[Mm]|560[Mm]|160[Mm]|80[Mm]|60[Mm]|40[Mm]|30[Mm]|20[Mm]|17[Mm]|15[Mm]|12[Mm]|10[Mm]|8[Mm]|6[Mm]|5[Mm]|4[Mm]|2[Mm]|1\\.25[Mm]|70[Cc][Mm]|33[Cc][Mm]|23[Cc][Mm]|13[Cc][Mm]|9[Cc][Mm]|6[Cc][Mm]|3[Cc][Mm]|1\\.25[Cc][Mm]|6[Mm][Mm]|4[Mm][Mm]|2\\.5[Mm][Mm]|2[Mm][Mm]|1[Mm][Mm]|[Ss][Uu][Bb][Mm][Mm])$(?![\\s\\S])"
+    },
+    "enum_Contest_ID": {
+      "type": "string",
+      "pattern": "^(?:070-160[Mm]-[Ss][Pp][Rr][Ii][Nn][Tt]|070-3-[Dd][Aa][Yy]|070-31-[Ff][Ll][Aa][Vv][Oo][Rr][Ss]|070-40[Mm]-[Ss][Pp][Rr][Ii][Nn][Tt]|070-80[Mm]-[Ss][Pp][Rr][Ii][Nn][Tt]|070-[Pp][Ss][Kk][Ff][Ee][Ss][Tt]|070-[Ss][Tt]-[Pp][Aa][Tt][Ss]-[Dd][Aa][Yy]|070-[Vv][Aa][Ll][Ee][Nn][Tt][Ii][Nn][Ee]-[Ss][Pp][Rr][Ii][Nn][Tt]|10-[Rr][Tt][Tt][Yy]|1010-[Oo][Pp][Ee][Nn]-[Ss][Ee][Aa][Ss][Oo][Nn]|7[Qq][Pp]|[Aa][Ll]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Aa][Ll][Ll]-[Aa][Ss][Ii][Aa][Nn]-[Dd][Xx]-[Cc][Ww]|[Aa][Ll][Ll]-[Aa][Ss][Ii][Aa][Nn]-[Dd][Xx]-[Pp][Hh][Oo][Nn][Ee]|[Aa][Nn][Aa][Rr][Tt][Ss]-[Rr][Tt][Tt][Yy]|[Aa][Nn][Aa][Tt][Oo][Ll][Ii][Aa][Nn]-[Rr][Tt][Tt][Yy]|[Aa][Pp]-[Ss][Pp][Rr][Ii][Nn][Tt]|[Aa][Rr]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Aa][Rr][Ii]-[Dd][Xx]|[Aa][Rr][Ii]-[Ee][Mm][Ee]|[Aa][Rr][Ii]-[Ii][Aa][Cc]-13[Cc][Mm]|[Aa][Rr][Ii]-[Ii][Aa][Cc]-23[Cc][Mm]|[Aa][Rr][Ii]-[Ii][Aa][Cc]-6[Mm]|[Aa][Rr][Ii]-[Ii][Aa][Cc]-[Uu][Hh][Ff]|[Aa][Rr][Ii]-[Ii][Aa][Cc]-[Vv][Hh][Ff]|[Aa][Rr][Rr][Ll]-10|[Aa][Rr][Rr][Ll]-10-[Gg][Hh][Zz]|[Aa][Rr][Rr][Ll]-160|[Aa][Rr][Rr][Ll]-222|[Aa][Rr][Rr][Ll]-[Dd][Ii][Gg][Ii]|[Aa][Rr][Rr][Ll]-[Dd][Xx]-[Cc][Ww]|[Aa][Rr][Rr][Ll]-[Dd][Xx]-[Ss][Ss][Bb]|[Aa][Rr][Rr][Ll]-[Ee][Mm][Ee]|[Aa][Rr][Rr][Ll]-[Ff][Ii][Ee][Ll][Dd]-[Dd][Aa][Yy]|[Aa][Rr][Rr][Ll]-[Rr][Rr]-[Cc][Ww]|[Aa][Rr][Rr][Ll]-[Rr][Rr]-[Rr][Tt][Tt][Yy]|[Aa][Rr][Rr][Ll]-[Rr][Rr]-[Ss][Ss][Bb]|[Aa][Rr][Rr][Ll]-[Rr][Tt][Tt][Yy]|[Aa][Rr][Rr][Ll]-[Ss][Cc][Rr]|[Aa][Rr][Rr][Ll]-[Ss][Ss]-[Cc][Ww]|[Aa][Rr][Rr][Ll]-[Ss][Ss]-[Ss][Ss][Bb]|[Aa][Rr][Rr][Ll]-[Uu][Hh][Ff]-[Aa][Uu][Gg]|[Aa][Rr][Rr][Ll]-[Vv][Hh][Ff]-[Jj][Aa][Nn]|[Aa][Rr][Rr][Ll]-[Vv][Hh][Ff]-[Jj][Uu][Nn]|[Aa][Rr][Rr][Ll]-[Vv][Hh][Ff]-[Ss][Ee][Pp]|[Aa][Zz]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Bb][Aa][Nn][Gg][Gg][Aa][Ii]-[Dd][Xx]|[Bb][Aa][Rr][Tt][Gg]-[Rr][Tt][Tt][Yy]|[Bb][Aa][Rr][Tt][Gg]-[Ss][Pp][Rr][Ii][Nn][Tt]|[Bb][Cc]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Bb][Ee][Kk][Aa][Ss][Ii]-[Mm][Ee][Rr][Dd][Ee][Kk][Aa]-[Cc][Oo][Nn][Tt][Ee][Ss][Tt]|[Cc][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Cc][Ii][Ss]-[Dd][Xx]|[Cc][Oo]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Cc][Qq]-160-[Cc][Ww]|[Cc][Qq]-160-[Ss][Ss][Bb]|[Cc][Qq]-[Mm]|[Cc][Qq]-[Vv][Hh][Ff]|[Cc][Qq]-[Ww][Pp][Xx]-[Cc][Ww]|[Cc][Qq]-[Ww][Pp][Xx]-[Rr][Tt][Tt][Yy]|[Cc][Qq]-[Ww][Pp][Xx]-[Ss][Ss][Bb]|[Cc][Qq]-[Ww][Ww]-[Cc][Ww]|[Cc][Qq]-[Ww][Ww]-[Rr][Tt][Tt][Yy]|[Cc][Qq]-[Ww][Ww]-[Ss][Ss][Bb]|[Cc][Tt]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Cc][Vv][Aa]-[Dd][Xx]-[Cc][Ww]|[Cc][Vv][Aa]-[Dd][Xx]-[Ss][Ss][Bb]|[Cc][Ww][Oo][Pp][Ss]-[Cc][Ww]-[Oo][Pp][Ee][Nn]|[Cc][Ww][Oo][Pp][Ss]-[Cc][Ww][Tt]|[Dd][Aa][Rr][Cc]-10|[Dd][Aa][Rr][Cc]-[Cc][Ww][Aa]|[Dd][Aa][Rr][Cc]-[Ff][Tt]4|[Dd][Aa][Rr][Cc]-[Hh][Ee][Ll][Ll]|[Dd][Aa][Rr][Cc]-[Mm][Ii][Cc][Rr][Oo][Ww][Aa][Vv][Ee]|[Dd][Aa][Rr][Cc]-[Tt][Rr][Aa][Ii][Nn][Ee][Ee]|[Dd][Aa][Rr][Cc]-[Uu][Kk][Ww]-[Ss][Pp][Rr][Ii][Nn][Gg]|[Dd][Aa][Rr][Cc]-[Uu][Kk][Ww]-[Ff][Ii][Ee][Ll][Dd]-[Dd][Aa][Yy]|[Dd][Aa][Rr][Cc]-[Vv][Hh][Ff]-[Uu][Hh][Ff]-[Mm][Ii][Cc][Rr][Oo][Ww][Aa][Vv][Ee]|[Dd][Aa][Rr][Cc]-[Ww][Aa][Ee][Dd][Cc]-[Cc][Ww]|[Dd][Aa][Rr][Cc]-[Ww][Aa][Ee][Dd][Cc]-[Rr][Tt][Tt][Yy]|[Dd][Aa][Rr][Cc]-[Ww][Aa][Ee][Dd][Cc]-[Ss][Ss][Bb]|[Dd][Aa][Rr][Cc]-[Ww][Aa][Gg]|[Dd][Ee]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Dd][Ll]-[Dd][Xx]-[Rr][Tt][Tt][Yy]|[Dd][Mm][Cc]-[Rr][Tt][Tt][Yy]|[Ee][Aa]-[Cc][Nn][Cc][Ww]|[Ee][Aa]-[Dd][Mm][Ee]|[Ee][Aa]-[Mm][Aa][Jj][Ee][Ss][Tt][Aa][Dd]-[Cc][Ww]|[Ee][Aa]-[Mm][Aa][Jj][Ee][Ss][Tt][Aa][Dd]-[Ss][Ss][Bb]|[Ee][Aa]-[Pp][Ss][Kk]63|[Ee][Aa]-[Rr][Tt][Tt][Yy]|[Ee][Aa]-[Ss][Mm][Rr][Ee]-[Cc][Ww]|[Ee][Aa]-[Ss][Mm][Rr][Ee]-[Ss][Ss][Bb]|[Ee][Aa]-[Vv][Hh][Ff]-[Aa][Tt][Ll][Aa][Nn][Tt][Ii][Cc]|[Ee][Aa]-[Vv][Hh][Ff]-[Cc][Oo][Mm]|[Ee][Aa]-[Vv][Hh][Ff]-[Cc][Oo][Ss][Tt][Aa]-[Ss][Oo][Ll]|[Ee][Aa]-[Vv][Hh][Ff]-[Ee][Aa]|[Ee][Aa]-[Vv][Hh][Ff]-[Ee][Aa]1[Rr][Cc][Ss]|[Ee][Aa]-[Vv][Hh][Ff]-[Qq][Ss][Ll]|[Ee][Aa]-[Vv][Hh][Ff]-[Ss][Aa][Dd][Uu][Rr][Nn][Ii]|[Ee][Aa]-[Ww][Ww]-[Rr][Tt][Tt][Yy]|[Ee][Aa][Ss][Tt][Ee][Rr]|[Ee][Pp][Cc]-[Pp][Ss][Kk]63|[Ee][Uu] [Ss][Pp][Rr][Ii][Nn][Tt]|[Ee][Uu]-[Hh][Ff]|[Ee][Uu]-[Pp][Ss][Kk]-[Dd][Xx]|[Ee][Uu][Cc][Ww]160[Mm]|[Ff][Aa][Ll][Ll] [Ss][Pp][Rr][Ii][Nn][Tt]|[Ff][Ll]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Gg][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Hh][Aa]-[Dd][Xx]|[Hh][Ee][Ll][Vv][Ee][Tt][Ii][Aa]|[Hh][Ii]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Hh][Oo][Ll][Yy][Ll][Aa][Nn][Dd]|[Ii][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ii][Aa][Rr][Uu]-[Ff][Ii][Ee][Ll][Dd]-[Dd][Aa][Yy]|[Ii][Aa][Rr][Uu]-[Hh][Ff]|[Ii][Cc][Ww][Cc]-[Mm][Ss][Tt]|[Ii][Dd]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ii][Ll] [Qq][Ss][Oo] [Pp][Aa][Rr][Tt][Yy]|[Ii][Nn]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Jj][Aa][Rr][Tt][Ss]-[Ww][Ww]-[Rr][Tt][Tt][Yy]|[Jj][Ii][Dd][Xx]-[Cc][Ww]|[Jj][Ii][Dd][Xx]-[Ss][Ss][Bb]|[Jj][Tt]-[Dd][Xx]-[Rr][Tt][Tt][Yy]|[Kk]1[Uu][Ss][Nn]-[Ss][Ss][Oo]|[Kk]1[Uu][Ss][Nn]-[Ss][Ss][Tt]|[Kk][Ss]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Kk][Yy]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ll][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ll][Dd][Cc]-[Rr][Tt][Tt][Yy]|[Ll][Zz] [Dd][Xx]|[Mm][Aa][Rr]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Dd]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Ee]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Ii]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Ii][Dd][Aa][Tt][Ll][Aa][Nn][Tt][Ii][Cc]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Nn]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Oo]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Ss]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Mm][Tt]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Aa]-[Ss][Pp][Rr][Ii][Nn][Tt]-[Cc][Ww]|[Nn][Aa]-[Ss][Pp][Rr][Ii][Nn][Tt]-[Rr][Tt][Tt][Yy]|[Nn][Aa]-[Ss][Pp][Rr][Ii][Nn][Tt]-[Ss][Ss][Bb]|[Nn][Aa][Qq][Pp]-[Cc][Ww]|[Nn][Aa][Qq][Pp]-[Rr][Tt][Tt][Yy]|[Nn][Aa][Qq][Pp]-[Ss][Ss][Bb]|[Nn][Aa][Vv][Aa][Ll]|[Nn][Cc]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Dd]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Ee]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Ee][Qq][Pp]|[Nn][Hh]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Jj]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Mm]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Rr][Aa][Uu]-[Bb][Aa][Ll][Tt][Ii][Cc]-[Cc][Ww]|[Nn][Rr][Aa][Uu]-[Bb][Aa][Ll][Tt][Ii][Cc]-[Ss][Ss][Bb]|[Nn][Vv]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Nn][Yy]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Oo][Cc][Ee][Aa][Nn][Ii][Aa]-[Dd][Xx]-[Cc][Ww]|[Oo][Cc][Ee][Aa][Nn][Ii][Aa]-[Dd][Xx]-[Ss][Ss][Bb]|[Oo][Hh]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Oo][Kk]-[Dd][Xx]-[Rr][Tt][Tt][Yy]|[Oo][Kk]-[Oo][Mm]-[Dd][Xx]|[Oo][Kk]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Oo][Mm][Ii][Ss][Ss]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Oo][Nn]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Oo][Rr]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Oo][Rr][Aa][Rr][Ii]-[Dd][Xx]|[Pp][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Pp][Aa][Cc][Cc]|[Pp][Cc][Cc]|[Pp][Ss][Kk]-[Dd][Ee][Aa][Tt][Hh][Mm][Aa][Tt][Cc][Hh]|[Qq][Cc]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Rr][Aa][Cc]|[Rr][Aa][Cc]-[Cc][Aa][Nn][Aa][Dd][Aa]-[Dd][Aa][Yy]|[Rr][Aa][Cc]-[Cc][Aa][Nn][Aa][Dd][Aa]-[Ww][Ii][Nn][Tt][Ee][Rr]|[Rr][Dd][Aa][Cc]|[Rr][Dd][Xx][Cc]|[Rr][Ee][Ff]-160[Mm]|[Rr][Ee][Ff]-[Cc][Ww]|[Rr][Ee][Ff]-[Ss][Ss][Bb]|[Rr][Ee][Pp]-[Pp][Oo][Rr][Tt][Uu][Gg][Aa][Ll]-[Dd][Aa][Yy]-[Hh][Ff]|[Rr][Ii]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Rr][Ss][Gg][Bb]-160|[Rr][Ss][Gg][Bb]-21/28-[Cc][Ww]|[Rr][Ss][Gg][Bb]-21/28-[Ss][Ss][Bb]|[Rr][Ss][Gg][Bb]-80[Mm]-[Cc][Cc]|[Rr][Ss][Gg][Bb]-[Aa][Ff][Ss]-[Cc][Ww]|[Rr][Ss][Gg][Bb]-[Aa][Ff][Ss]-[Ss][Ss][Bb]|[Rr][Ss][Gg][Bb]-[Cc][Ll][Uu][Bb]-[Cc][Aa][Ll][Ll][Ss]|[Rr][Ss][Gg][Bb]-[Cc][Oo][Mm][Mm][Oo][Nn][Ww][Ee][Aa][Ll][Tt][Hh]|[Rr][Ss][Gg][Bb]-[Ii][Oo][Tt][Aa]|[Rr][Ss][Gg][Bb]-[Ll][Oo][Ww]-[Pp][Oo][Ww][Ee][Rr]|[Rr][Ss][Gg][Bb]-[Nn][Ff][Dd]|[Rr][Ss][Gg][Bb]-[Rr][Oo][Pp][Oo][Cc][Oo]|[Rr][Ss][Gg][Bb]-[Ss][Ss][Bb]-[Ff][Dd]|[Rr][Uu][Ss][Ss][Ii][Aa][Nn]-[Rr][Tt][Tt][Yy]|[Ss][Aa][Cc]-[Cc][Ww]|[Ss][Aa][Cc]-[Ss][Ss][Bb]|[Ss][Aa][Rr][Tt][Gg]-[Rr][Tt][Tt][Yy]|[Ss][Cc]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ss][Cc][Cc]-[Rr][Tt][Tt][Yy]|[Ss][Dd]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ss][Hh][Oo][Rr][Tt][Rr][Yy]|[Ss][Kk][Cc][Cc]-[Ss][Kk][Ss]|[Ss][Kk][Cc][Cc]-[Ss][Kk][Ss][Aa]|[Ss][Kk][Cc][Cc]-[Ss][Kk][Ss][Ee]|[Ss][Kk][Cc][Cc]-[Ww][Ee][Ss]|[Ss][Mm][Pp]-[Aa][Uu][Gg]|[Ss][Mm][Pp]-[Mm][Aa][Yy]|[Ss][Pp]-[Dd][Xx]-[Rr][Tt][Tt][Yy]|[Ss][Pp][Aa][Rr]-[Ww][Ii][Nn][Tt][Ee][Rr]-[Ff][Dd]|[Ss][Pp][Dd][Xx][Cc][Oo][Nn][Tt][Ee][Ss][Tt]|[Ss][Pp][Rr][Ii][Nn][Gg] [Ss][Pp][Rr][Ii][Nn][Tt]|[Ss][Rr]-[Mm][Aa][Rr][Aa][Tt][Hh][Oo][Nn]|[Ss][Tt][Ee][Ww]-[Pp][Ee][Rr][Rr][Yy]|[Ss][Uu][Mm][Mm][Ee][Rr] [Ss][Pp][Rr][Ii][Nn][Tt]|[Tt][Aa][Rr][Aa]-[Gg][Rr][Ii][Dd]-[Dd][Ii][Pp]|[Tt][Aa][Rr][Aa]-[Rr][Tt][Tt][Yy]|[Tt][Aa][Rr][Aa]-[Rr][Uu][Mm][Bb][Ll][Ee]|[Tt][Aa][Rr][Aa]-[Ss][Kk][Ii][Rr][Mm][Ii][Ss][Hh]|[Tt][Ee][Nn]-[Rr][Tt][Tt][Yy]|[Tt][Mm][Cc]-[Rr][Tt][Tt][Yy]|[Tt][Nn]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Tt][Xx]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Uu][Bb][Aa]-[Dd][Xx]-[Cc][Ww]|[Uu][Bb][Aa]-[Dd][Xx]-[Ss][Ss][Bb]|[Uu][Kk]-[Dd][Xx]-[Bb][Pp][Ss][Kk]63|[Uu][Kk]-[Dd][Xx]-[Rr][Tt][Tt][Yy]|[Uu][Kk][Rr]-[Cc][Hh][Aa][Mm][Pp]-[Rr][Tt][Tt][Yy]|[Uu][Kk][Rr][Aa][Ii][Nn][Ii][Aa][Nn] [Dd][Xx]|[Uu][Kk][Ss][Mm][Gg]-6[Mm]-[Mm][Aa][Rr][Aa][Tt][Hh][Oo][Nn]|[Uu][Kk][Ss][Mm][Gg]-[Ss][Uu][Mm][Mm][Ee][Rr]-[Ee][Ss]|[Uu][Rr][Ee]-[Dd][Xx]|[Uu][Ss]-[Cc][Oo][Uu][Nn][Tt][Ii][Ee][Ss]-[Qq][Ss][Oo]|[Uu][Tt]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Vv][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Vv][Ee][Nn][Ee][Zz]-[Ii][Nn][Dd]-[Dd][Aa][Yy]|[Vv][Ii][Rr][Gg][Ii][Nn][Ii][Aa] [Qq][Ss][Oo] [Pp][Aa][Rr][Tt][Yy]|[Vv][Oo][Ll][Tt][Aa]-[Rr][Tt][Tt][Yy]|[Vv][Tt]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ww][Aa]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ww][Ff][Dd]|[Ww][Ii]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ww][Ii][Aa]-[Hh][Aa][Rr][Rr][Yy] [Aa][Nn][Gg][Ee][Ll]|[Ww][Ii][Aa]-[Jj][Mm][Mm][Ff][Dd]|[Ww][Ii][Aa]-[Oo][Cc][Dd][Xx]|[Ww][Ii][Aa]-[Rr][Ee][Mm][Ee][Mm][Bb][Rr][Aa][Nn][Cc][Ee]|[Ww][Ii][Aa]-[Rr][Oo][Ss][Ss] [Hh][Uu][Ll][Ll]|[Ww][Ii][Aa]-[Tt][Rr][Aa][Nn][Ss] [Tt][Aa][Ss][Mm][Aa][Nn]|[Ww][Ii][Aa]-[Vv][Hh][Ff]/[Uu][Hh][Ff] [Ff][Dd]|[Ww][Ii][Aa]-[Vv][Kk] [Ss][Hh][Ii][Rr][Ee][Ss]|[Ww][Ii][Nn][Tt][Ee][Rr] [Ss][Pp][Rr][Ii][Nn][Tt]|[Ww][Vv]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Ww][Ww]-[Dd][Ii][Gg][Ii]|[Ww][Yy]-[Qq][Ss][Oo]-[Pp][Aa][Rr][Tt][Yy]|[Xx][Ee]-[Ii][Nn][Tt][Ll]-[Rr][Tt][Tt][Yy]|[Yy][Oo][Hh][Ff][Dd][Xx]|[Yy][Uu][Dd][Xx][Cc])$(?![\\s\\S])"
+    },
+    "enum_Continent": {
+      "type": "string",
+      "pattern": "^(?:[Nn][Aa]|[Ss][Aa]|[Ee][Uu]|[Aa][Ff]|[Oo][Cc]|[Aa][Ss]|[Aa][Nn])$(?![\\s\\S])"
+    },
+    "enum_Credit": {
+      "type": "string",
+      "pattern": "^(?:[Cc][Qq][Dd][Xx]|[Cc][Qq][Dd][Xx]_[Bb][Aa][Nn][Dd]|[Cc][Qq][Dd][Xx]_[Mm][Oo][Dd][Ee]|[Cc][Qq][Dd][Xx]_[Mm][Oo][Bb][Ii][Ll][Ee]|[Cc][Qq][Dd][Xx]_[Qq][Rr][Pp]|[Cc][Qq][Dd][Xx]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]_[Bb][Aa][Nn][Dd]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]_[Mm][Oo][Dd][Ee]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]_[Mm][Oo][Bb][Ii][Ll][Ee]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]_[Qq][Rr][Pp]|[Cc][Qq][Dd][Xx][Ff][Ii][Ee][Ll][Dd]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Cc][Qq][Ww][Aa][Zz]_[Mm][Ii][Xx][Ee][Dd]|[Cc][Qq][Ww][Aa][Zz]_[Bb][Aa][Nn][Dd]|[Cc][Qq][Ww][Aa][Zz]_[Mm][Oo][Dd][Ee]|[Cc][Qq][Ww][Aa][Zz]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Cc][Qq][Ww][Aa][Zz]_[Ee][Mm][Ee]|[Cc][Qq][Ww][Aa][Zz]_[Mm][Oo][Bb][Ii][Ll][Ee]|[Cc][Qq][Ww][Aa][Zz]_[Qq][Rr][Pp]|[Cc][Qq][Ww][Pp][Xx]|[Cc][Qq][Ww][Pp][Xx]_[Bb][Aa][Nn][Dd]|[Cc][Qq][Ww][Pp][Xx]_[Mm][Oo][Dd][Ee]|[Dd][Xx][Cc][Cc]|[Dd][Xx][Cc][Cc]_[Bb][Aa][Nn][Dd]|[Dd][Xx][Cc][Cc]_[Mm][Oo][Dd][Ee]|[Dd][Xx][Cc][Cc]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Ee][Aa][Uu][Ss][Tt][Rr][Aa][Ll][Ii][Aa]|[Ee][Cc][Aa][Nn][Aa][Dd][Aa]|[Ee][Cc][Oo][Uu][Nn][Tt][Yy]_[Ss][Tt][Aa][Tt][Ee]|[Ee][Dd][Xx]|[Ee][Dd][Xx]100|[Ee][Dd][Xx]100_[Bb][Aa][Nn][Dd]|[Ee][Dd][Xx]100_[Mm][Oo][Dd][Ee]|[Ee][Ee][Cc][Hh][Oo][Ll][Ii][Nn][Kk]50|[Ee][Gg][Rr][Ii][Dd]_[Bb][Aa][Nn][Dd]|[Ee][Gg][Rr][Ii][Dd]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Ee][Pp][Ff][Xx]300|[Ee][Pp][Ff][Xx]300_[Mm][Oo][Dd][Ee]|[Ee][Ww][Aa][Ss]|[Ee][Ww][Aa][Ss]_[Bb][Aa][Nn][Dd]|[Ee][Ww][Aa][Ss]_[Mm][Oo][Dd][Ee]|[Ee][Ww][Aa][Ss]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Ee][Zz]40|[Ee][Zz]40_[Mm][Oo][Dd][Ee]|[Ff][Ff][Mm][Aa]|[Ii][Oo][Tt][Aa]|[Ii][Oo][Tt][Aa]_[Bb][Aa][Ss][Ii][Cc]|[Ii][Oo][Tt][Aa]_[Cc][Oo][Nn][Tt]|[Ii][Oo][Tt][Aa]_[Gg][Rr][Oo][Uu][Pp]|[Rr][Dd][Aa]|[Uu][Ss][Aa][Cc][Aa]|[Vv][Uu][Cc][Cc]_[Bb][Aa][Nn][Dd]|[Vv][Uu][Cc][Cc]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Ww][Aa][Bb]|[Ww][Aa][Cc]|[Ww][Aa][Cc]_[Bb][Aa][Nn][Dd]|[Ww][Aa][Ee]|[Ww][Aa][Ee]_[Bb][Aa][Nn][Dd]|[Ww][Aa][Ee]_[Mm][Oo][Dd][Ee]|[Ww][Aa][Ii][Pp]|[Ww][Aa][Ii][Pp]_[Bb][Aa][Nn][Dd]|[Ww][Aa][Ii][Pp]_[Mm][Oo][Dd][Ee]|[Ww][Aa][Ss]|[Ww][Aa][Ss]_[Bb][Aa][Nn][Dd]|[Ww][Aa][Ss]_[Ee][Mm][Ee]|[Ww][Aa][Ss]_[Mm][Oo][Dd][Ee]|[Ww][Aa][Ss]_[Nn][Oo][Vv][Ii][Cc][Ee]|[Ww][Aa][Ss]_[Qq][Rr][Pp]|[Ww][Aa][Ss]_[Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Ww][Ii][Tt][Uu][Zz]|[Ww][Ii][Tt][Uu][Zz]_[Bb][Aa][Nn][Dd])$(?![\\s\\S])"
+    },
+    "enum_DXCC_Entity_Code": {
+      "type": "integer",
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        84,
+        85,
+        86,
+        88,
+        89,
+        90,
+        91,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        291,
+        292,
+        293,
+        294,
+        295,
+        296,
+        297,
+        298,
+        299,
+        301,
+        302,
+        303,
+        304,
+        305,
+        306,
+        307,
+        308,
+        309,
+        312,
+        315,
+        318,
+        321,
+        324,
+        327,
+        330,
+        333,
+        336,
+        339,
+        342,
+        344,
+        345,
+        348,
+        354,
+        363,
+        369,
+        370,
+        372,
+        375,
+        376,
+        378,
+        379,
+        381,
+        382,
+        384,
+        386,
+        387,
+        390,
+        391,
+        400,
+        401,
+        402,
+        404,
+        406,
+        408,
+        409,
+        410,
+        411,
+        412,
+        414,
+        416,
+        420,
+        422,
+        424,
+        428,
+        430,
+        432,
+        434,
+        436,
+        438,
+        440,
+        442,
+        444,
+        446,
+        450,
+        452,
+        453,
+        454,
+        456,
+        458,
+        460,
+        462,
+        464,
+        466,
+        468,
+        470,
+        474,
+        478,
+        480,
+        482,
+        483,
+        488,
+        489,
+        490,
+        492,
+        493,
+        497,
+        499,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        508,
+        509,
+        510,
+        511,
+        512,
+        513,
+        514,
+        515,
+        516,
+        517,
+        518,
+        519,
+        520,
+        521,
+        522
+      ]
+    },
+    "enum_EQSL_AG": {
+      "type": "string",
+      "pattern": "^(?:[Yy]|[Nn]|[Uu])$(?![\\s\\S])"
+    },
+    "enum_Mode": {
+      "type": "string",
+      "pattern": "^(?:[Aa][Mm]|[Aa][Rr][Dd][Oo][Pp]|[Aa][Tt][Vv]|[Cc][Hh][Ii][Pp]|[Cc][Ll][Oo]|[Cc][Oo][Nn][Tt][Ee][Ss][Tt][Ii]|[Cc][Ww]|[Dd][Ii][Gg][Ii][Tt][Aa][Ll][Vv][Oo][Ii][Cc][Ee]|[Dd][Oo][Mm][Ii][Nn][Oo]|[Dd][Yy][Nn][Aa][Mm][Ii][Cc]|[Ff][Aa][Xx]|[Ff][Mm]|[Ff][Ss][Kk]441|[Ff][Ss][Kk]|[Ff][Tt]8|[Hh][Ee][Ll][Ll]|[Ii][Ss][Cc][Aa][Tt]|[Jj][Tt]4|[Jj][Tt]6[Mm]|[Jj][Tt]9|[Jj][Tt]44|[Jj][Tt]65|[Mm][Ff][Ss][Kk]|[Mm][Ss][Kk]144|[Mm][Tt][Oo][Nn][Ee]|[Mm][Tt]63|[Oo][Ff][Dd][Mm]|[Oo][Ll][Ii][Vv][Ii][Aa]|[Oo][Pp][Ee][Rr][Aa]|[Pp][Aa][Cc]|[Pp][Aa][Xx]|[Pp][Kk][Tt]|[Pp][Ss][Kk]|[Pp][Ss][Kk]2[Kk]|[Qq]15|[Qq][Rr][Aa]64|[Rr][Oo][Ss]|[Rr][Tt][Tt][Yy]|[Rr][Tt][Tt][Yy][Mm]|[Ss][Ss][Bb]|[Ss][Ss][Tt][Vv]|[Tt]10|[Tt][Hh][Oo][Rr]|[Tt][Hh][Rr][Bb]|[Tt][Oo][Rr]|[Vv]4|[Vv][Oo][Ii]|[Ww][Ii][Nn][Mm][Oo][Rr]|[Ww][Ss][Pp][Rr]|[Aa][Mm][Tt][Oo][Rr][Ff][Ee][Cc]|[Aa][Ss][Cc][Ii]|[Cc]4[Ff][Mm]|[Cc][Hh][Ii][Pp]64|[Cc][Hh][Ii][Pp]128|[Dd][Oo][Mm][Ii][Nn][Oo][Ff]|[Dd][Ss][Tt][Aa][Rr]|[Ff][Mm][Hh][Ee][Ll][Ll]|[Ff][Ss][Kk]31|[Gg][Tt][Oo][Rr]|[Hh][Ee][Ll][Ll]80|[Hh][Ff][Ss][Kk]|[Jj][Tt]4[Aa]|[Jj][Tt]4[Bb]|[Jj][Tt]4[Cc]|[Jj][Tt]4[Dd]|[Jj][Tt]4[Ee]|[Jj][Tt]4[Ff]|[Jj][Tt]4[Gg]|[Jj][Tt]65[Aa]|[Jj][Tt]65[Bb]|[Jj][Tt]65[Cc]|[Mm][Ff][Ss][Kk]8|[Mm][Ff][Ss][Kk]16|[Pp][Aa][Cc]2|[Pp][Aa][Cc]3|[Pp][Aa][Xx]2|[Pp][Cc][Ww]|[Pp][Ss][Kk]10|[Pp][Ss][Kk]31|[Pp][Ss][Kk]63|[Pp][Ss][Kk]63[Ff]|[Pp][Ss][Kk]125|[Pp][Ss][Kk][Aa][Mm]10|[Pp][Ss][Kk][Aa][Mm]31|[Pp][Ss][Kk][Aa][Mm]50|[Pp][Ss][Kk][Ff][Ee][Cc]31|[Pp][Ss][Kk][Hh][Ee][Ll][Ll]|[Qq][Pp][Ss][Kk]31|[Qq][Pp][Ss][Kk]63|[Qq][Pp][Ss][Kk]125|[Tt][Hh][Rr][Bb][Xx])$(?![\\s\\S])"
+    },
+    "enum_Morse_Key_Type": {
+      "type": "string",
+      "pattern": "^(?:[Ss][Kk]|[Ss][Ss]|[Bb][Uu][Gg]|[Ff][Aa][Bb]|[Ss][Pp]|[Dd][Pp]|[Cc][Pp][Uu])$(?![\\s\\S])"
+    },
+    "enum_Primary_Administrative_Subdivision": {
+      "type": "string",
+      "pattern": "^(?:[Nn][Ss]|[Qq][Cc]|[Oo][Nn]|[Mm][Bb]|[Ss][Kk]|[Aa][Bb]|[Bb][Cc]|[Nn][Tt]|[Nn][Bb]|[Nn][Ll]|[Yy][Tt]|[Pp][Ee]|[Nn][Uu]|001|002|003|004|005|006|007|008|009|010|011|012|013|014|015|016|051|[Aa][Kk]|[Aa][Nn]|[Uu][Oo]|[Cc][Bb]|[Ss][Vv]|[Pp][Mm]|[Kk][Pp]|[Tt][Oo]|[Hh][Mm]|[Yy][Nn]|[Tt][Nn]|[Oo][Mm]|[Kk][Nn]|[Oo][Bb]|[Kk][Ee]|[Bb][Aa]|[Kk][Oo]|[Aa][Ll]|[Gg][Aa]|[Kk][Kk]|[Tt][Mm]|[Hh][Kk]|[Ee][Aa]|[Ss][Ll]|[Ee][Vv]|[Mm][Gg]|[Aa][Mm]|[Cc][Kk]|[Pp][Kk]|[Bb][Uu]|[Yy][Aa]|[Ii][Rr]|[Cc][Tt]|[Hh][Aa]|[Kk][Yy]|[Tt][Uu]|[Kk][Tt]|[Ii][Bb]|[Mm][Ii]|[Bb][Rr]|[Hh][Rr]|[Vv][Ii]|[Mm][Aa]|[Hh][Oo]|[Gg][Cc]|[Tt][Ff]|[Cc][Ee]|[Mm][Ll]|[Cc][Oo][Ll]|[Dd][Ff]|[Cc][Mm][Xx]|[Ee][Mm][Xx]|[Mm][Ee][Xx]|[Gg][Tt][Oo]|[Gg][Uu][Aa]|[Hh][Gg][Oo]|[Hh][Ii][Dd]|[Jj][Aa][Ll]|[Mm][Ii][Cc]|[Mm][Oo][Rr]|[Nn][Aa][Yy]|[Pp][Uu][Ee]|[Qq][Rr][Oo]|[Qq][Uu][Ee]|[Tt][Ll][Xx]|[Tt][Ll][Aa]|[Vv][Ee][Rr]|[Aa][Gg][Ss]|[Aa][Gg][Uu]|[Bb][Cc][Nn]|[Bb][Cc][Ss]|[Cc][Hh][Hh]|[Cc][Oo][Aa]|[Dd][Gg][Oo]|[Dd][Uu][Rr]|[Nn][Ll][Ee]|[Ss][Ll][Pp]|[Ss][Ii][Nn]|[Ss][Oo][Nn]|[Tt][Mm][Ss]|[Tt][Aa][Mm]|[Zz][Aa][Cc]|[Cc][Aa][Mm]|[Cc][Hh][Ss]|[Cc][Hh][Pp]|[Gg][Rr][Oo]|[Oo][Aa][Xx]|[Qq][Tt][Rr]|[Rr][Oo][Oo]|[Tt][Aa][Bb]|[Yy][Uu][Cc]|[Ss][Pp]|[Ll][Oo]|[Kk][Ll]|[Aa][Rr]|[Nn][Oo]|[Vv][Oo]|[Nn][Vv]|[Pp][Ss]|[Mm][Uu]|[Mm][Oo]|[Oo][Rr]|[Ll][Pp]|[Tt][Vv]|[Ss][Mm]|[Yy][Rr]|[Kk][Ss]|[Tt][Ll]|[Vv][Rr]|[Tt][Bb]|[Rr][Aa]|[Nn][Nn]|[Ii][Vv]|[Vv][Ll]|[Kk][Uu]|[Kk][Gg]|[Bb][Oo]|[Vv][Gg]|[Ss][Aa]|[Ss][Rr]|[Uu][Ll]|[Kk][Ii]|[Tt][Aa]|[Mm][Rr]|[Mm][Dd]|[Uu][Dd]|[Cc][Uu]|[Kk][Rr]|[Kk][Cc]|[Ss][Tt]|[Kk][Mm]|[Ss][Oo]|[Rr][Oo]|[Cc][Nn]|[Ii][Nn]|[Aa][Oo]|[Dd][Aa]|[Kk][Bb]|[Aa][Dd]|[Ff][Jj][Ll]|15|09|08|06|12|14|11|99|03|10|04|16|01|07|13|05|[Cc]|[Bb]|[Ss]|[Hh]|[Pp]|[Xx]|[Nn]|[Ee]|[Tt]|[Ww]|[Mm]|[Gg]|[Aa]|[Jj]|[Dd]|[Kk]|[Ff]|[Yy]|[Ll]|[Rr]|[Uu]|[Zz]|[Vv]|[Qq]|[Ee][Ss]|[Gg][Oo]|[Ss][Cc]|[Ss][Ee]|[Aa][Pp]|[Pp][Bb]|[Rr][Nn]|[Pp][Ii]|[Aa][Cc]|[Mm][Ss]|[Rr][Rr]|[Rr][Jj]|[Rr][Ss]|[Pp][Rr]|[Pp][Aa]|[Mm][Tt]|[Hh][Ii]|[Ii][Ii]|[Ii][Ii][Ii]|[Aa][Tt]|[Ii]|[Xx][Vv]|[Cc][Oo]|[Vv][Ss]|[Rr][Mm]|[Ll][Ii]|[Vv][Ii][Ii]|[Vv][Ii][Ii][Ii]|[Bb][Ii]|[Ii][Xx]|[Xx][Ii][Vv]|[Ll][Rr]|[Ll][Ll]|[Xx][Ii]|[Aa][Ii]|[Xx][Ii][Ii]|22|[Kk][Aa]|19|1|02|2|[Aa][Ss][Uu]|3|9|6|5|4|8|7|[Ii][Ss]|[Ll][Dd]|[Cc][Aa]|[Ss][Jj]|[Ff][Dd]|[Ff][Ss]|[Dd][Uu]|[Rr][Vv]|[Ll][Aa]|[Tt][Tt]|[Cc][Ll]|[Ll][Hh]|[Dd][Cc]|[Ff][Aa]|[Gg][Uu]|[Mm][Ee]|[Nn][Ee]|[Pp][Oo]|[Ss][Uu]|[Tt][Rr]|[Vv][Aa]|[Zz][Uu]|[Aa][Cc][Tt]|[Nn][Ss][Ww]|[Vv][Ii][Cc]|[Qq][Ll][Dd]|[Ww][Aa]|[Tt][Aa][Ss]|[Mm][Vv]|[Nn][Cc][Dd]|[Cc][Pp][Mm]|[Cc][Pp][Kk]|[Ee][Hh][Gg]|[Ee][Bb][Rr]|[Ee][Ss][Ww]|[Ee][Pp][Ww]|[Gg][Pp][Kk]|[Mm][Pp][Mm]|[Mm][Rr][Ll]|[Mm][Bb][Aa]|[Mm][Pp][Ll]|[Nn][Ii][Kk]|[Nn][Pp][Pp]|[Nn][Ss][Aa]|[Nn][Ss][Bb]|[Ss][Aa][Nn]|[Ss][Hh][Mm]|[Ww][Pp][Dd]|[Ww][Hh][Mm]|[Ww][Bb][Rr]|[Ww][Bb][Kk]|[Hh][Ll][Aa]|[Jj][Ww][Kk]|[Aa][Uu][Kk]|[Bb][Oo][Pp]|[Nn][Tt][Ll]|[Ww][Kk][Oo]|[Gg][Ii][Ss]|[Hh][Kk][Bb]|[Mm][Ww][Tt]|[Tt][Kk][Ii]|[Ww][Gg][Nn]|[Cc][Aa][Nn]|[Mm][Bb][Hh]|[Nn][Ss][Nn]|[Ww][Tt][Cc]|[Oo][Tt][Aa]|[Ss][Tt][Ll]|[Oo]|[Ww][Cc]|[Jj][Oo]|[Zz][Ee]|[Bb][Ll]|[Bb][Nn]|[Gg][Dd]|[Gg][Ff]|[Hh][Ll]|[Ll][Ff]|[Nn][Kk]|[Pp][Cc]|[Pp][Ll]|[Ss][Bb]|[Ss][Ww]|[Ww][Bb]|[Ww][Nn]|[Ww][Tt]|[Ww][Uu]|[Ww][Yy]|[Zz][Tt]|[Ee][Cc]|[Ee][Uu]|[Gg][Ss]|[Jj][Ee]|[Nn][Dd]|[Oo][Pp]|[Oo][Ww]|[Ee][Ff]|[Ff][Rr]|[Gg][Mm]|[Gg][Rr]|[Ll][Cc]|[Rr][Ii]|[Ss][Dd]|[Uu][Uu]|[Vv][Bb]|[Ww][Ee]|[Ww][Ll]|[Bb][Mm]|[Dd][Ll]|[Ff][Bb]|[Ff][Ff]|[Gg][Bb]|[Hh][Bb]|[Hh][Ff]|[Jj][Uu]|[Kk][Ff]|[Ll][Bb]|[Ll][Ee]|[Ll][Nn]|[Mm][Zz]|[Ww][Zz]|[Ii][Cc]|[Ii][Ll]|[Ii][Mm]|[Ll][Zz]|[Rr][Ee]|[Ss][Zz]|[Ff][Ee]|[Hh][Ee]|[Vv][Kk]|[Ww][Oo]|[Bb][Zz]|[Dd][Oo]|[Ff][Kk]|[Bb][Ww]|[Hh][Tt]|[Ll][Gg]|[Nn][Mm]|[Ll][Uu]|[Oo][Vv]|[Ww][Vv]|[Pp][Dd]|[Kk][Dd]|[Ss][Ff]|[Ll][Vv]|[Vv][Tt]|[Mm][Nn]|[Vv][Dd]|[Rr][Zz]|[Ss][Ss]|[Ss][Nn]|[Vv][Nn]|2[Aa]|2[Bb]|020|025|030|035|040|042|050|055|060|065|070|076|080|101|147|100|102|103|104|105|106|107|108|109|110|111|112|115|116|117|119|120|122|123|124|126|128|129|130|131|132|133|134|135|136|137|138|139|140|141|142|143|144|145|148|149|150|151|152|154|156|157|158|159|160|161|162|163|164|165|167|168|169|170|171|172|173|174|175|176|178|179|180|181|182|183|184|185|186|187|188|189|190|191|192|193|194|195|196|198|199|201|202|204|205|206|207|208|209|210|211|212|213|214|215|216|217|218|220|221|222|223|224|225|226|227|228|229|231|233|234|235|236|238|241|242|243|301|303|304|305|306|307|308|309|310|311|312|313|314|315|316|318|319|320|321|322|323|324|325|326|327|328|329|330|331|332|333|334|335|336|337|340|341|342|344|345|346|347|348|349|350|351|352|353|354|355|356|357|358|402|403|404|405|407|408|409|410|411|412|413|414|415|417|418|419|420|421|422|423|424|425|426|427|428|502|503|504|505|506|507|509|510|511|513|514|515|516|518|519|520|521|522|523|525|526|527|528|530|531|532|601|602|603|604|605|606|607|608|609|610|611|612|613|614|615|616|617|619|620|621|622|623|624|625|626|627|628|629|630|632|633|634|635|636|637|638|639|640|641|642|643|644|645|646|647|648|649|650|651|652|653|654|655|656|657|658|659|660|661|662|663|664|665|666|668|669|670|671|672|673|675|676|677|678|679|680|681|682|683|684|685|686|687|688|689|690|692|701|702|703|704|705|706|707|708|709|710|711|712|713|714|715|716|717|718|719|720|721|722|723|724|725|726|727|728|729|730|731|732|733|734|735|736|737|738|739|740|741|742|743|801|802|803|804|805|806|807|808|810|811|812|813|814|815|816|817|818|819|820|821|822|823|824|825|826|827|828|829|830|831|832|833|834|835|836|837|838|839|840|841|842|843|844|846|847|848|849|850|851|852|853|901|902|903|904|905|907|908|909|910|911|912|913|914|915|916|917|918|919|920|921|922|923|[Cc][Ii]|[Oo][Gg]|[Oo][Tt]|17|18|21|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|[Bb][Bb]|[Bb][Ee]|[Bb][Yy]|[Hh][Hh]|[Nn][Ii]|[Nn][Ww]|[Rr][Pp]|[Ss][Hh]|[Tt][Hh]|[Gg][Yy]|[Zz][Aa]|[Vv][Ee]|[Bb][Pp]|[Nn][Gg]|[Cc][Ss]|[Cc][Ww]|[Ll][Ss]|[Ll][Mm]|[Ll][Kk]|[Mm][Hh]|[Oo][Yy]|[Ww][Dd]|[Ww][Hh]|[Ww][Xx]|[Ww][Ww]|[Gg][Ee]|[Vv][Cc]|[Bb][Gg]|[Bb][Ss]|[Cc][Rr]|[Pp][Vv]|[Pp][Nn]|[Tt][Ss]|[Ff][Oo]|[Ff][Cc]|[Ff][Ii]|[Pp][Tt]|[Ss][Ii]|[Cc][Hh]|[Aa][Qq]|[Tt][Ee]|[Ff][Mm]|[Mm][Cc]|[Pp][Uu]|[Pp][Zz]|[Bb][Tt]|[Ff][Gg]|[Cc][Zz]|[Rr][Cc]|[Vv][Vv]|[Aa][Vv]|[Nn][Aa]|[Ll][Tt]|[Pp][Gg]|[Aa][Gg]|[Ee][Nn]|[Rr][Gg]|[Tt][Pp]|[Dd][Rr]|[Zz][Hh]|[Ff][Ll]|[Nn][Hh]|[Uu][Tt]|[Zz][Ll]|[Bb][Jj]|[Ll][Xx]|[Hh][Dd]|[Ii][Ff]|[Gg][Ll]|[Bb][Hh]|[Cc][Jj]|[Mm][Mm]|[Bb][Vv]|[Cc][Vv]|[Dd][Jj]|[Gg][Jj]|[Dd][Bb]|[Pp][Hh]|[Oo][Uu]|[Ss][Gg]|[Hh][Uu]|[Gg][Ii]|[Cc][Cc]|[Bb][Dd]|[Tt][Ii]|[Tt][Gg]|[Uu][Rr]|[Zz][Gg]|[Dd][Nn]|[Oo][Dd]|[Zz][Pp]|[Kk][Vv]|[Nn][Jj]|[Nn][Yy]|[Dd][Ee]|[Nn][Cc]|[Oo][Kk]|[Tt][Xx]|[Aa][Zz]|[Ii][Dd]|[Oo][Hh]|[Ww][Ii]|[Ii][Aa]|[Aa][Hh]|[Cc][Qq]|[Ff][Jj]|[Gg][Xx]|[Gg][Zz]|[Hh][Nn]|[Jj][Ll]|[Jj][Ss]|[Jj][Xx]|[Nn][Xx]|[Qq][Hh]|[Ss][Xx]|[Tt][Jj]|[Xx][Jj]|[Xx][Zz]|[Zz][Jj]|[Aa][Ss]|[Cc][Gg]|[Dd][Dd]|[Hh][Pp]|[Jj][Kk]|[Jj][Hh]|[Mm][Pp]|[Pp][Yy]|[Uu][Pp]|[Uu][Kk]|20|[Aa][Uu][Rr]|[Bb][Tt][Gg]|[Cc][Aa][Vv]|[Ll][Aa][Gg]|[Mm][Aa][Dd]|[Mm][Dd][Cc]|[Mm][Dd][Rr]|[Pp][Ll][Ww]|[Rr][Ii][Zz]|[Rr][Oo][Mm]|[Ii][Ll][Nn]|[Ii][Ll][Ss]|[Ll][Uu][Nn]|[Pp][Aa][Nn]|[Bb][Tt][Nn]|[Cc][Aa][Gg]|[Ii][Ss][Aa]|[Nn][Uu][Vv]|[Qq][Uu][Ii]|[Aa][Bb][Rr]|[Aa][Pp][Aa]|[Bb][Ee][Nn]|[Ii][Ff][Uu]|[Kk][Aa][Ll]|[Mm][Oo][Uu]|[Bb][Aa][Nn]|[Bb][Uu][Ll]|[Nn][Uu][Ee]|[Pp][Aa][Mm]|[Tt][Aa][Rr]|[Zz][Mm][Bb]|[Aa][Ll][Bb]|[Cc][Aa][Ss]|[Cc][Aa][Tt]|[Mm][Aa][Ss]|[Ss][Oo][Rr]|[Bb][Ii][Ll]|[Ee][Aa][Ss]|[Ll][Ee][Yy]|[Ss][Ll][Ee]|[Ww][Ss][Aa]|[Aa][Kk][Ll]|[Aa][Nn][Tt]|[Cc][Aa][Pp]|[Gg][Uu][Ii]|[Ii][Ll][Ii]|[Nn][Ee][Cc]|[Bb][Oo][Hh]|[Cc][Ee][Bb]|[Nn][Ee][Rr]|[Ss][Ii][Gg]|[Zz][Aa][Nn]|[Zz][Aa][Ss]|[Zz][Ss][Ii]|[Nn][Cc][Oo]|[Ss][Uu][Kk]|[Ss][Aa][Rr]|[Ss][Cc][Oo]|[Bb][Aa][Ss]|[Ll][Aa][Ss]|[Mm][Aa][Gg]|[Ss][Ll][Uu]|[Tt][Aa][Ww]|[Ll][Aa][Nn]|[Bb][Uu][Kk]|[Mm][Ss][Cc]|[Mm][Ss][Rr]|[Cc][Oo][Mm]|[Dd][Aa][Vv]|[Dd][Aa][Ss]|[Dd][Aa][Oo]|[Aa][Gg][Nn]|[Ss][Uu][Nn]|[Ss][Uu][Rr]|[Cc][Hh][Aa]|[Cc][Yy][Ii]|[Cc][Yy][Qq]|[Hh][Ss][Zz]|[Hh][Ss][Qq]|[Hh][Uu][Aa]|[Kk][Hh][Hh]|[Kk][Ee][Ee]|[Kk][Ii][Nn]|[Ll][Ii][Ee]|[Mm][Ii][Aa]|[Nn][Aa][Nn]|[Nn][Ww][Tt]|[Pp][Ee][Nn]|[Pp][Ii][Ff]|[Tt][Xx][Gg]|[Tt][Nn][Nn]|[Tt][Pp][Ee]|[Tt][Tt][Tt]|[Tt][Aa][Oo]|[Ii][Ll][Aa]|[Yy][Uu][Nn]|[Aa][Pp][Bb]|[Aa][Pp][Cc]|[Aa][Pp][Dd]|[Aa][Pp][Ee]|[Aa][Pp][Ff]|[Aa][Pp][Gg]|[Aa][Pp][Hh]|[Aa][Pp][Ii]|[Aa][Pp][Jj]|[Bb][Bb][Nn]|[Bb][Bb][Ee]|[Bb][Kk][Dd]|[Bb][Kk][Oo]|[Bb][Kk][Hh]|[Bb][Mm][Ee]|[Bb][Mm][Bb]|[Bb][Nn][Yy]|[Bb][Pp][Zz]|[Bb][Pp][Vv]|[Bb][Pp][Bb]|[Bb][Rr][Aa]|[Cc][Bb][Uu]|[Cc][Cc][Kk]|[Cc][Jj][Hh]|[Cc][Pp][Ee]|[Cc][Pp][Ii]|[Cc][Pp][Rr]|[Cc][Ss][Tt]|[Cc][Tt][Aa]|[Dd][Dd][Oo]|[Dd][Cc][Hh]|[Dd][Kk][Vv]|[Dd][Kk][Ll]|[Dd][Pp][Mm]|[Dd][Pp][Jj]|[Dd][Pp][Ss]|[Dd][Rr][Oo]|[Dd][Ss][Oo]|[Dd][Tt][Aa]|[Ee][Cc][Ll]|[Ee][Dd][Ee]|[Ee][Cc][Hh]|[Ee][Jj][Aa]|[Ee][Ll][Ii]|[Ee][Ll][Tt]|[Ee][Ll][Oo]|[Ee][Mm][Oo]|[Ee][Tt][Ee]|[Ee][Uu][Ll]|[Ff][Hh][Bb]|[Ff][Hh][Kk]|[Ff][Cc][Rr]|[Ff][Jj][Ii]|[Ff][Nn][Aa]|[Ff][Pp][Aa]|[Ff][Rr][Kk]|[Ff][Ss][Ee]|[Ff][Ss][Vv]|[Ff][Tt][Rr]|[Ff][Uu][Oo]|[Gg][Bb][Ll]|[Gg][Bb][Mm]|[Gg][Bb][Vv]|[Gg][Bb][Rr]|[Gg][Hh][Oo]|[Gg][Jj][Ii]|[Gg][Kk][Rr]|[Gg][Pp][Rr]|[Gg][Tt][Rr]|[Gg][Uu][Hh]|[Gg][Vv][Yy]|[Gg][Zz][Ll]|[Gg][Zz][Nn]|[Gg][Zz][Ss]|[Hh][Bb][Rr]|[Hh][Ff][Mm]|[Hh][Jj][Ee]|[Hh][Kk][Aa]|[Hh][Nn][Jj]|[Hh][Oo][Ll]|[Hh][Oo][Pp]|[Hh][Oo][Ss]|[Hh][Pp][Rr]|[Hh][Ss][Uu]|[Hh][Vv][Ss]|[Bb][Aa][Aa]|[Bb][Aa][Bb]|[Bb][Aa][Cc]|[Bb][Aa][Dd]|[Bb][Aa][Ee]|[Mm][Aa][Ll]|[Pp][Ee][Zz]|[Ss][Ee][Nn]|[Dd][Ss][Tt]|[Gg][Aa][Ll]|[Hh][Ll][Oo]|[Pp][Ii][Ee]|[Ss][Ee][Aa]|[Ss][Kk][Aa]|[Tt][Rr][Nn]|[Mm][Yy][Jj]|[Nn][Mm][Vv]|[Pp][Aa][Rr]|[Pp][Bb][Yy]|[Pp][Rr][Ii]|[Pp][Uu][Cc]|[Tt][Nn][Cc]|[Kk][Oo][Mm]|[Ll][Vv][Cc]|[Nn][Ii][Tt]|[Nn][Zz][Aa]|[Ss][Aa][Ll]|[Tt][Oo][Pp]|[Zz][Mm][Oo]|[Bb][Yy][Tt]|[Cc][Aa][Dd]|[Dd][Kk][Uu]|[Kk][Nn][Mm]|[Ll][Mm][Ii]|[Mm][Aa][Rr]|[Nn][Aa][Mm]|[Rr][Uu][Zz]|[Tt][Tt][Ee]|[Tt][Vv][Rr]|[Zz][Ii][Ll]|[Bb][Bb][Yy]|[Bb][Ss][Tt]|[Bb][Rr][Ee]|[Dd][Ee][Tt]|[Kk][Rr][Uu]|[Ll][Uu][Cc]|[Pp][Oo][Ll]|[Rr][Ee][Vv]|[Rr][Ss][Oo]|[Vv][Kk][Rr]|[Zz][Aa][Rr]|[Zz][Ii][Hh]|[Zz][Vv][Oo]|[Gg][Ee][Ll]|[Kk][Ee][Aa]|[Kk][Ee][Bb]|[Kk][Ee][Cc]|[Kk][Ee][Dd]|[Kk][Ee][Oo]|[Rr][Oo][Zz]|[Ss][Oo][Bb]|[Ss][Nn][Vv]|[Tt][Rr][Ee]|[Bb][Aa][Rr]|[Hh][Uu][Mm]|[Kk][Ee][Zz]|[Ll][Ee][Vv]|[Mm][Ee][Dd]|[Pp][Oo][Pp]|[Pp][Rr][Ee]|[Ss][Aa][Bb]|[Ss][Nn][Ii]|[Ss][Tt][Rr]|[Ss][Vv][Ii]|[Vv][Rr][Tt])$(?![\\s\\S])"
+    },
+    "enum_Propagation_Mode": {
+      "type": "string",
+      "pattern": "^(?:[Aa][Ss]|[Aa][Uu][Ee]|[Aa][Uu][Rr]|[Bb][Ss]|[Ee][Cc][Hh]|[Ee][Mm][Ee]|[Ee][Ss]|[Ff]2|[Ff][Aa][Ii]|[Gg][Ww][Aa][Vv][Ee]|[Ii][Nn][Tt][Ee][Rr][Nn][Ee][Tt]|[Ii][Oo][Nn]|[Ii][Rr][Ll]|[Ll][Oo][Ss]|[Mm][Ss]|[Rr][Pp][Tt]|[Rr][Ss]|[Ss][Aa][Tt]|[Tt][Ee][Pp]|[Tt][Rr])$(?![\\s\\S])"
+    },
+    "enum_QSL_Medium": {
+      "type": "string",
+      "pattern": "^(?:[Cc][Aa][Rr][Dd]|[Ee][Qq][Ss][Ll]|[Ll][Oo][Tt][Ww])$(?![\\s\\S])"
+    },
+    "enum_QSL_Rcvd": {
+      "type": "string",
+      "pattern": "^(?:[Yy]|[Nn]|[Rr]|[Ii]|[Vv])$(?![\\s\\S])"
+    },
+    "enum_QSL_Sent": {
+      "type": "string",
+      "pattern": "^(?:[Yy]|[Nn]|[Rr]|[Qq]|[Ii])$(?![\\s\\S])"
+    },
+    "enum_QSL_Via": {
+      "type": "string",
+      "pattern": "^(?:[Bb]|[Dd]|[Ee]|[Mm])$(?![\\s\\S])"
+    },
+    "enum_QSO_Complete": {
+      "type": "string",
+      "pattern": "^(?:[Yy]|[Nn]|[Nn][Ii][Ll]|\\?)$(?![\\s\\S])"
+    },
+    "enum_QSO_Download_Status": {
+      "type": "string",
+      "pattern": "^(?:[Yy]|[Nn]|[Ii])$(?![\\s\\S])"
+    },
+    "enum_QSO_Upload_Status": {
+      "type": "string",
+      "pattern": "^(?:[Yy]|[Nn]|[Mm])$(?![\\s\\S])"
+    },
+    "enum_Region": {
+      "type": "string",
+      "pattern": "^(?:[Nn][Oo][Nn][Ee]|[Ii][Vv]|[Aa][Ii]|[Ss][Yy]|[Bb][Ii]|[Ss][Ii]|[Kk][Oo]|[Ee][Tt])$(?![\\s\\S])"
+    },
+    "enum_Submode": {
+      "type": "string",
+      "pattern": "^(?:8[Pp][Ss][Kk]125|8[Pp][Ss][Kk]125[Ff]|8[Pp][Ss][Kk]125[Ff][Ll]|8[Pp][Ss][Kk]250|8[Pp][Ss][Kk]250[Ff]|8[Pp][Ss][Kk]250[Ff][Ll]|8[Pp][Ss][Kk]500|8[Pp][Ss][Kk]500[Ff]|8[Pp][Ss][Kk]1000|8[Pp][Ss][Kk]1000[Ff]|8[Pp][Ss][Kk]1200[Ff]|[Aa][Mm][Tt][Oo][Rr][Ff][Ee][Cc]|[Aa][Ss][Cc][Ii]|[Cc]4[Ff][Mm]|[Cc][Hh][Ii][Pp]64|[Cc][Hh][Ii][Pp]128|[Dd][Mm][Rr]|[Dd][Oo][Mm]-[Mm]|[Dd][Oo][Mm]4|[Dd][Oo][Mm]5|[Dd][Oo][Mm]8|[Dd][Oo][Mm]11|[Dd][Oo][Mm]16|[Dd][Oo][Mm]22|[Dd][Oo][Mm]44|[Dd][Oo][Mm]88|[Dd][Oo][Mm][Ii][Nn][Oo][Ee][Xx]|[Dd][Oo][Mm][Ii][Nn][Oo][Ff]|[Dd][Ss][Tt][Aa][Rr]|[Ff][Mm][Hh][Ee][Ll][Ll]|[Ff][Rr][Ee][Ee][Dd][Aa][Tt][Aa]|[Ff][Rr][Ee][Ee][Dd][Vv]|[Ff][Ss][Kk]31|[Ff][Ss][Kk][Hh]105|[Ff][Ss][Kk][Hh]245|[Ff][Ss][Kk][Hh][Ee][Ll][Ll]|[Ff][Ss][Qq][Cc][Aa][Ll][Ll]|[Ff][Ss][Tt]4|[Ff][Ss][Tt]4[Ww]|[Ff][Tt]2|[Ff][Tt]4|[Gg][Tt][Oo][Rr]|[Hh][Ee][Ll][Ll]80|[Hh][Ee][Ll][Ll][Xx]5|[Hh][Ee][Ll][Ll][Xx]9|[Hh][Ff][Ss][Kk]|[Ii][Ss][Cc][Aa][Tt]-[Aa]|[Ii][Ss][Cc][Aa][Tt]-[Bb]|[Jj][Ss]8|[Jj][Tt]4[Aa]|[Jj][Tt]4[Bb]|[Jj][Tt]4[Cc]|[Jj][Tt]4[Dd]|[Jj][Tt]4[Ee]|[Jj][Tt]4[Ff]|[Jj][Tt]4[Gg]|[Jj][Tt]9-1|[Jj][Tt]9-2|[Jj][Tt]9-5|[Jj][Tt]9-10|[Jj][Tt]9-30|[Jj][Tt]9[Aa]|[Jj][Tt]9[Bb]|[Jj][Tt]9[Cc]|[Jj][Tt]9[Dd]|[Jj][Tt]9[Ee]|[Jj][Tt]9[Ee] [Ff][Aa][Ss][Tt]|[Jj][Tt]9[Ff]|[Jj][Tt]9[Ff] [Ff][Aa][Ss][Tt]|[Jj][Tt]9[Gg]|[Jj][Tt]9[Gg] [Ff][Aa][Ss][Tt]|[Jj][Tt]9[Hh]|[Jj][Tt]9[Hh] [Ff][Aa][Ss][Tt]|[Jj][Tt]65[Aa]|[Jj][Tt]65[Bb]|[Jj][Tt]65[Bb]2|[Jj][Tt]65[Cc]|[Jj][Tt]65[Cc]2|[Jj][Tt][Mm][Ss]|[Jj][Tt][Tt][Yy]|[Ll][Ss][Bb]|[Mm]17|[Mm][Ff][Ss][Kk]4|[Mm][Ff][Ss][Kk]8|[Mm][Ff][Ss][Kk]11|[Mm][Ff][Ss][Kk]16|[Mm][Ff][Ss][Kk]22|[Mm][Ff][Ss][Kk]31|[Mm][Ff][Ss][Kk]32|[Mm][Ff][Ss][Kk]64|[Mm][Ff][Ss][Kk]64[Ll]|[Mm][Ff][Ss][Kk]128|[Mm][Ff][Ss][Kk]128[Ll]|[Nn][Aa][Vv][Tt][Ee][Xx]|[Oo][Ll][Ii][Vv][Ii][Aa] 4/125|[Oo][Ll][Ii][Vv][Ii][Aa] 4/250|[Oo][Ll][Ii][Vv][Ii][Aa] 8/250|[Oo][Ll][Ii][Vv][Ii][Aa] 8/500|[Oo][Ll][Ii][Vv][Ii][Aa] 16/500|[Oo][Ll][Ii][Vv][Ii][Aa] 16/1000|[Oo][Ll][Ii][Vv][Ii][Aa] 32/1000|[Oo][Pp][Ee][Rr][Aa]-[Bb][Ee][Aa][Cc][Oo][Nn]|[Oo][Pp][Ee][Rr][Aa]-[Qq][Ss][Oo]|[Pp][Aa][Cc]2|[Pp][Aa][Cc]3|[Pp][Aa][Cc]4|[Pp][Aa][Xx]2|[Pp][Cc][Ww]|[Pp][Ss][Kk]10|[Pp][Ss][Kk]31|[Pp][Ss][Kk]63|[Pp][Ss][Kk]63[Ff]|[Pp][Ss][Kk]63[Rr][Cc]10|[Pp][Ss][Kk]63[Rr][Cc]20|[Pp][Ss][Kk]63[Rr][Cc]32|[Pp][Ss][Kk]63[Rr][Cc]4|[Pp][Ss][Kk]63[Rr][Cc]5|[Pp][Ss][Kk]125|[Pp][Ss][Kk]125[Rr][Cc]10|[Pp][Ss][Kk]125[Rr][Cc]12|[Pp][Ss][Kk]125[Rr][Cc]16|[Pp][Ss][Kk]125[Rr][Cc]4|[Pp][Ss][Kk]125[Rr][Cc]5|[Pp][Ss][Kk]250|[Pp][Ss][Kk]250[Rr][Cc]2|[Pp][Ss][Kk]250[Rr][Cc]3|[Pp][Ss][Kk]250[Rr][Cc]5|[Pp][Ss][Kk]250[Rr][Cc]6|[Pp][Ss][Kk]250[Rr][Cc]7|[Pp][Ss][Kk]500|[Pp][Ss][Kk]500[Rr][Cc]2|[Pp][Ss][Kk]500[Rr][Cc]3|[Pp][Ss][Kk]500[Rr][Cc]4|[Pp][Ss][Kk]800[Rr][Cc]2|[Pp][Ss][Kk]1000|[Pp][Ss][Kk]1000[Rr][Cc]2|[Pp][Ss][Kk][Aa][Mm]10|[Pp][Ss][Kk][Aa][Mm]31|[Pp][Ss][Kk][Aa][Mm]50|[Pp][Ss][Kk][Ff][Ee][Cc]31|[Pp][Ss][Kk][Hh][Ee][Ll][Ll]|[Qq][Pp][Ss][Kk]31|[Qq]65|[Qq][Pp][Ss][Kk]63|[Qq][Pp][Ss][Kk]125|[Qq][Pp][Ss][Kk]250|[Qq][Pp][Ss][Kk]500|[Qq][Rr][Aa]64[Aa]|[Qq][Rr][Aa]64[Bb]|[Qq][Rr][Aa]64[Cc]|[Qq][Rr][Aa]64[Dd]|[Qq][Rr][Aa]64[Ee]|[Rr][Ii][Bb][Bb][Ii][Tt]_[Pp][Ii][Xx]|[Rr][Ii][Bb][Bb][Ii][Tt]_[Ss][Mm][Ss]|[Rr][Oo][Ss]-[Ee][Mm][Ee]|[Rr][Oo][Ss]-[Hh][Ff]|[Rr][Oo][Ss]-[Mm][Ff]|[Ss][Cc][Aa][Mm][Pp]_[Ff][Aa][Ss][Tt]|[Ss][Cc][Aa][Mm][Pp]_[Oo][Oo]|[Ss][Cc][Aa][Mm][Pp]_[Oo][Oo]_[Ss][Ll][Ww]|[Ss][Cc][Aa][Mm][Pp]_[Ss][Ll][Oo][Ww]|[Ss][Cc][Aa][Mm][Pp]_[Vv][Ss][Ll][Oo][Ww]|[Ss][Ii][Mm]31|[Ss][Ii][Tt][Oo][Rr][Bb]|[Ss][Ll][Oo][Ww][Hh][Ee][Ll][Ll]|[Tt][Hh][Oo][Rr]-[Mm]|[Tt][Hh][Oo][Rr]4|[Tt][Hh][Oo][Rr]5|[Tt][Hh][Oo][Rr]8|[Tt][Hh][Oo][Rr]11|[Tt][Hh][Oo][Rr]16|[Tt][Hh][Oo][Rr]22|[Tt][Hh][Oo][Rr]25[Xx]4|[Tt][Hh][Oo][Rr]50[Xx]1|[Tt][Hh][Oo][Rr]50[Xx]2|[Tt][Hh][Oo][Rr]100|[Tt][Hh][Rr][Bb][Xx]|[Tt][Hh][Rr][Bb][Xx]1|[Tt][Hh][Rr][Bb][Xx]2|[Tt][Hh][Rr][Bb][Xx]4|[Tt][Hh][Rr][Oo][Bb]1|[Tt][Hh][Rr][Oo][Bb]2|[Tt][Hh][Rr][Oo][Bb]4|[Uu][Ss][Bb]|[Vv][Aa][Rr][Aa] [Hh][Ff]|[Vv][Aa][Rr][Aa] [Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Vv][Aa][Rr][Aa] [Ff][Mm] 1200|[Vv][Aa][Rr][Aa] [Ff][Mm] 9600)$(?![\\s\\S])"
+    },
+    "AwardList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/enum_Award"
+      }
+    },
+    "Credit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credit"
+      ],
+      "properties": {
+        "credit": {
+          "$ref": "#/$defs/enum_Credit"
+        },
+        "media": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/enum_QSL_Medium"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "LegacyAward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award"
+      ],
+      "properties": {
+        "award": {
+          "$ref": "#/$defs/enum_Award"
+        }
+      },
+      "deprecated": true
+    },
+    "CreditList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/Credit"
+      }
+    },
+    "CreditOrAwardList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/Credit"
+          },
+          {
+            "$ref": "#/$defs/LegacyAward"
+          }
+        ]
+      }
+    },
+    "SponsoredAwardList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:(?:[Aa][Dd][Ii][Ff]_|[Aa][Rr][Ii]_|[Aa][Rr][Rr][Ll]_|[Cc][Qq]_|[Dd][Aa][Rr][Cc]_|[Ee][Qq][Ss][Ll]_|[Ii][Aa][Rr][Uu]_|[Jj][Aa][Rr][Ll]_|[Rr][Ss][Gg][Bb]_|[Tt][Aa][Gg]_|[Ww][Aa][Bb][Aa][Gg]_)[\\s\\S]+)$(?![\\s\\S])"
+      }
+    },
+    "SecondarySubdivision": {
+      "$ref": "#/$defs/String",
+      "minLength": 1,
+      "description": "Sponsor-defined code; most county/district lists are maintained outside ADIF."
+    },
+    "ExtensionName": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nonempty Unicode name. Custom fields are isolated from standard fields by their containers."
+    },
+    "JsonSchema": {
+      "$ref": "https://json-schema.org/draft/2020-12/schema",
+      "description": "JSON Schema Draft 2020-12 resource. Meta-validated here; consumers must apply it to custom values in a second validation stage."
+    },
+    "CustomDefinitions": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/ExtensionName"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonSchema"
+      }
+    },
+    "CustomValues": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/ExtensionName"
+      },
+      "additionalProperties": true
+    },
+    "Header": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "adif_ver": {
+          "const": "3.1.8",
+          "title": "ADIF_VER"
+        },
+        "created_timestamp": {
+          "$ref": "#/$defs/Timestamp",
+          "title": "CREATED_TIMESTAMP"
+        },
+        "programid": {
+          "$ref": "#/$defs/String",
+          "title": "PROGRAMID"
+        },
+        "programversion": {
+          "$ref": "#/$defs/String",
+          "title": "PROGRAMVERSION"
+        },
+        "user_defined": {
+          "$ref": "#/$defs/CustomDefinitions",
+          "description": "Custom field names mapped to JSON Schema resources. Replaces ADI USERDEFn and ADX USERDEF declarations."
+        },
+        "app": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/ExtensionName"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/CustomDefinitions"
+          },
+          "description": "Application schemas keyed by PROGRAMID, then FIELDNAME."
+        }
+      }
+    },
+    "Record": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "$ref": "#/$defs/MultilineString",
+          "title": "ADDRESS"
+        },
+        "address_intl": {
+          "$ref": "#/$defs/IntlMultilineString",
+          "title": "ADDRESS_INTL"
+        },
+        "age": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "maximum": 120,
+          "title": "AGE"
+        },
+        "altitude": {
+          "$ref": "#/$defs/Number",
+          "title": "ALTITUDE"
+        },
+        "ant_az": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "maximum": 360,
+          "title": "ANT_AZ"
+        },
+        "ant_el": {
+          "$ref": "#/$defs/Number",
+          "minimum": -90,
+          "maximum": 90,
+          "title": "ANT_EL"
+        },
+        "ant_path": {
+          "$ref": "#/$defs/enum_Ant_Path",
+          "title": "ANT_PATH"
+        },
+        "arrl_sect": {
+          "$ref": "#/$defs/enum_ARRL_Section",
+          "title": "ARRL_SECT"
+        },
+        "award_submitted": {
+          "$ref": "#/$defs/SponsoredAwardList",
+          "title": "AWARD_SUBMITTED"
+        },
+        "award_granted": {
+          "$ref": "#/$defs/SponsoredAwardList",
+          "title": "AWARD_GRANTED"
+        },
+        "a_index": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "maximum": 400,
+          "title": "A_INDEX"
+        },
+        "band": {
+          "$ref": "#/$defs/enum_Band",
+          "title": "BAND"
+        },
+        "band_rx": {
+          "$ref": "#/$defs/enum_Band",
+          "title": "BAND_RX"
+        },
+        "call": {
+          "$ref": "#/$defs/String",
+          "title": "CALL"
+        },
+        "check": {
+          "$ref": "#/$defs/String",
+          "title": "CHECK"
+        },
+        "class": {
+          "$ref": "#/$defs/String",
+          "title": "CLASS"
+        },
+        "clublog_qso_upload_date": {
+          "$ref": "#/$defs/Date",
+          "title": "CLUBLOG_QSO_UPLOAD_DATE"
+        },
+        "clublog_qso_upload_status": {
+          "$ref": "#/$defs/enum_QSO_Upload_Status",
+          "title": "CLUBLOG_QSO_UPLOAD_STATUS"
+        },
+        "cnty": {
+          "$ref": "#/$defs/SecondarySubdivision",
+          "title": "CNTY"
+        },
+        "cnty_alt": {
+          "$ref": "#/$defs/SecondaryAdministrativeSubdivisionListAlt",
+          "title": "CNTY_ALT"
+        },
+        "comment": {
+          "$ref": "#/$defs/String",
+          "title": "COMMENT"
+        },
+        "comment_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "COMMENT_INTL"
+        },
+        "cont": {
+          "$ref": "#/$defs/enum_Continent",
+          "title": "CONT"
+        },
+        "contacted_op": {
+          "$ref": "#/$defs/String",
+          "title": "CONTACTED_OP"
+        },
+        "contest_id": {
+          "$ref": "#/$defs/String",
+          "title": "CONTEST_ID"
+        },
+        "country": {
+          "$ref": "#/$defs/String",
+          "title": "COUNTRY"
+        },
+        "country_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "COUNTRY_INTL"
+        },
+        "cqz": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "maximum": 40,
+          "title": "CQZ"
+        },
+        "credit_submitted": {
+          "$ref": "#/$defs/CreditOrAwardList",
+          "title": "CREDIT_SUBMITTED"
+        },
+        "credit_granted": {
+          "$ref": "#/$defs/CreditOrAwardList",
+          "title": "CREDIT_GRANTED"
+        },
+        "darc_dok": {
+          "$ref": "#/$defs/Enumeration",
+          "title": "DARC_DOK"
+        },
+        "dcl_qslrdate": {
+          "$ref": "#/$defs/Date",
+          "title": "DCL_QSLRDATE"
+        },
+        "dcl_qslsdate": {
+          "$ref": "#/$defs/Date",
+          "title": "DCL_QSLSDATE"
+        },
+        "dcl_qsl_rcvd": {
+          "$ref": "#/$defs/enum_QSL_Rcvd",
+          "title": "DCL_QSL_RCVD"
+        },
+        "dcl_qsl_sent": {
+          "$ref": "#/$defs/enum_QSL_Sent",
+          "title": "DCL_QSL_SENT"
+        },
+        "distance": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "title": "DISTANCE"
+        },
+        "dxcc": {
+          "$ref": "#/$defs/enum_DXCC_Entity_Code",
+          "title": "DXCC"
+        },
+        "email": {
+          "$ref": "#/$defs/String",
+          "title": "EMAIL"
+        },
+        "eq_call": {
+          "$ref": "#/$defs/String",
+          "title": "EQ_CALL"
+        },
+        "eqsl_ag": {
+          "$ref": "#/$defs/enum_EQSL_AG",
+          "title": "EQSL_AG"
+        },
+        "eqsl_qslrdate": {
+          "$ref": "#/$defs/Date",
+          "title": "EQSL_QSLRDATE"
+        },
+        "eqsl_qslsdate": {
+          "$ref": "#/$defs/Date",
+          "title": "EQSL_QSLSDATE"
+        },
+        "eqsl_qsl_rcvd": {
+          "$ref": "#/$defs/enum_QSL_Rcvd",
+          "title": "EQSL_QSL_RCVD"
+        },
+        "eqsl_qsl_sent": {
+          "$ref": "#/$defs/enum_QSL_Sent",
+          "title": "EQSL_QSL_SENT"
+        },
+        "fists": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "title": "FISTS"
+        },
+        "fists_cc": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "title": "FISTS_CC"
+        },
+        "force_init": {
+          "$ref": "#/$defs/Boolean",
+          "title": "FORCE_INIT"
+        },
+        "freq": {
+          "$ref": "#/$defs/Number",
+          "title": "FREQ"
+        },
+        "freq_rx": {
+          "$ref": "#/$defs/Number",
+          "title": "FREQ_RX"
+        },
+        "gridsquare": {
+          "$ref": "#/$defs/GridSquare",
+          "title": "GRIDSQUARE"
+        },
+        "gridsquare_ext": {
+          "$ref": "#/$defs/GridSquareExt",
+          "title": "GRIDSQUARE_EXT"
+        },
+        "guest_op": {
+          "$ref": "#/$defs/String",
+          "title": "GUEST_OP",
+          "deprecated": true
+        },
+        "hamlogeu_qso_upload_date": {
+          "$ref": "#/$defs/Date",
+          "title": "HAMLOGEU_QSO_UPLOAD_DATE"
+        },
+        "hamlogeu_qso_upload_status": {
+          "$ref": "#/$defs/enum_QSO_Upload_Status",
+          "title": "HAMLOGEU_QSO_UPLOAD_STATUS"
+        },
+        "hamqth_qso_upload_date": {
+          "$ref": "#/$defs/Date",
+          "title": "HAMQTH_QSO_UPLOAD_DATE"
+        },
+        "hamqth_qso_upload_status": {
+          "$ref": "#/$defs/enum_QSO_Upload_Status",
+          "title": "HAMQTH_QSO_UPLOAD_STATUS"
+        },
+        "hrdlog_qso_upload_date": {
+          "$ref": "#/$defs/Date",
+          "title": "HRDLOG_QSO_UPLOAD_DATE"
+        },
+        "hrdlog_qso_upload_status": {
+          "$ref": "#/$defs/enum_QSO_Upload_Status",
+          "title": "HRDLOG_QSO_UPLOAD_STATUS"
+        },
+        "iota": {
+          "$ref": "#/$defs/IOTARefNo",
+          "title": "IOTA"
+        },
+        "iota_island_id": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "maximum": 99999999,
+          "title": "IOTA_ISLAND_ID"
+        },
+        "ituz": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "maximum": 90,
+          "title": "ITUZ"
+        },
+        "k_index": {
+          "$ref": "#/$defs/Integer",
+          "minimum": 0,
+          "maximum": 9,
+          "title": "K_INDEX"
+        },
+        "lat": {
+          "$ref": "#/$defs/Latitude",
+          "title": "LAT"
+        },
+        "lon": {
+          "$ref": "#/$defs/Longitude",
+          "title": "LON"
+        },
+        "lotw_qslrdate": {
+          "$ref": "#/$defs/Date",
+          "title": "LOTW_QSLRDATE"
+        },
+        "lotw_qslsdate": {
+          "$ref": "#/$defs/Date",
+          "title": "LOTW_QSLSDATE"
+        },
+        "lotw_qsl_rcvd": {
+          "$ref": "#/$defs/enum_QSL_Rcvd",
+          "title": "LOTW_QSL_RCVD"
+        },
+        "lotw_qsl_sent": {
+          "$ref": "#/$defs/enum_QSL_Sent",
+          "title": "LOTW_QSL_SENT"
+        },
+        "max_bursts": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "title": "MAX_BURSTS"
+        },
+        "mode": {
+          "$ref": "#/$defs/enum_Mode",
+          "title": "MODE"
+        },
+        "morse_key_info": {
+          "$ref": "#/$defs/String",
+          "title": "MORSE_KEY_INFO"
+        },
+        "morse_key_type": {
+          "$ref": "#/$defs/enum_Morse_Key_Type",
+          "title": "MORSE_KEY_TYPE"
+        },
+        "ms_shower": {
+          "$ref": "#/$defs/String",
+          "title": "MS_SHOWER"
+        },
+        "my_altitude": {
+          "$ref": "#/$defs/Number",
+          "title": "MY_ALTITUDE"
+        },
+        "my_antenna": {
+          "$ref": "#/$defs/String",
+          "title": "MY_ANTENNA"
+        },
+        "my_antenna_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_ANTENNA_INTL"
+        },
+        "my_arrl_sect": {
+          "$ref": "#/$defs/enum_ARRL_Section",
+          "title": "MY_ARRL_SECT"
+        },
+        "my_city": {
+          "$ref": "#/$defs/String",
+          "title": "MY_CITY"
+        },
+        "my_city_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_CITY_INTL"
+        },
+        "my_cnty": {
+          "$ref": "#/$defs/SecondarySubdivision",
+          "title": "MY_CNTY"
+        },
+        "my_cnty_alt": {
+          "$ref": "#/$defs/SecondaryAdministrativeSubdivisionListAlt",
+          "title": "MY_CNTY_ALT"
+        },
+        "my_country": {
+          "$ref": "#/$defs/String",
+          "title": "MY_COUNTRY"
+        },
+        "my_country_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_COUNTRY_INTL"
+        },
+        "my_cq_zone": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "maximum": 40,
+          "title": "MY_CQ_ZONE"
+        },
+        "my_darc_dok": {
+          "$ref": "#/$defs/Enumeration",
+          "title": "MY_DARC_DOK"
+        },
+        "my_dxcc": {
+          "$ref": "#/$defs/enum_DXCC_Entity_Code",
+          "title": "MY_DXCC"
+        },
+        "my_fists": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "title": "MY_FISTS"
+        },
+        "my_gridsquare": {
+          "$ref": "#/$defs/GridSquare",
+          "title": "MY_GRIDSQUARE"
+        },
+        "my_gridsquare_ext": {
+          "$ref": "#/$defs/GridSquareExt",
+          "title": "MY_GRIDSQUARE_EXT"
+        },
+        "my_iota": {
+          "$ref": "#/$defs/IOTARefNo",
+          "title": "MY_IOTA"
+        },
+        "my_iota_island_id": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "maximum": 99999999,
+          "title": "MY_IOTA_ISLAND_ID"
+        },
+        "my_itu_zone": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "maximum": 90,
+          "title": "MY_ITU_ZONE"
+        },
+        "my_lat": {
+          "$ref": "#/$defs/Latitude",
+          "title": "MY_LAT"
+        },
+        "my_lon": {
+          "$ref": "#/$defs/Longitude",
+          "title": "MY_LON"
+        },
+        "my_morse_key_info": {
+          "$ref": "#/$defs/String",
+          "title": "MY_MORSE_KEY_INFO"
+        },
+        "my_morse_key_type": {
+          "$ref": "#/$defs/enum_Morse_Key_Type",
+          "title": "MY_MORSE_KEY_TYPE"
+        },
+        "my_name": {
+          "$ref": "#/$defs/String",
+          "title": "MY_NAME"
+        },
+        "my_name_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_NAME_INTL"
+        },
+        "my_postal_code": {
+          "$ref": "#/$defs/String",
+          "title": "MY_POSTAL_CODE"
+        },
+        "my_postal_code_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_POSTAL_CODE_INTL"
+        },
+        "my_pota_ref": {
+          "$ref": "#/$defs/POTARefList",
+          "title": "MY_POTA_REF"
+        },
+        "my_rig": {
+          "$ref": "#/$defs/String",
+          "title": "MY_RIG"
+        },
+        "my_rig_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_RIG_INTL"
+        },
+        "my_sig": {
+          "$ref": "#/$defs/String",
+          "title": "MY_SIG"
+        },
+        "my_sig_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_SIG_INTL"
+        },
+        "my_sig_info": {
+          "$ref": "#/$defs/String",
+          "title": "MY_SIG_INFO"
+        },
+        "my_sig_info_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_SIG_INFO_INTL"
+        },
+        "my_sota_ref": {
+          "$ref": "#/$defs/SOTARef",
+          "title": "MY_SOTA_REF"
+        },
+        "my_state": {
+          "$ref": "#/$defs/String",
+          "title": "MY_STATE"
+        },
+        "my_street": {
+          "$ref": "#/$defs/String",
+          "title": "MY_STREET"
+        },
+        "my_street_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "MY_STREET_INTL"
+        },
+        "my_usaca_counties": {
+          "$ref": "#/$defs/USACACounties"
+        },
+        "my_vucc_grids": {
+          "$ref": "#/$defs/VUCCGrids"
+        },
+        "my_wwff_ref": {
+          "$ref": "#/$defs/WWFFRef",
+          "title": "MY_WWFF_REF"
+        },
+        "name": {
+          "$ref": "#/$defs/String",
+          "title": "NAME"
+        },
+        "name_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "NAME_INTL"
+        },
+        "notes": {
+          "$ref": "#/$defs/MultilineString",
+          "title": "NOTES"
+        },
+        "notes_intl": {
+          "$ref": "#/$defs/IntlMultilineString",
+          "title": "NOTES_INTL"
+        },
+        "nr_bursts": {
+          "$ref": "#/$defs/Integer",
+          "minimum": 0,
+          "title": "NR_BURSTS"
+        },
+        "nr_pings": {
+          "$ref": "#/$defs/Integer",
+          "minimum": 0,
+          "title": "NR_PINGS"
+        },
+        "operator": {
+          "$ref": "#/$defs/String",
+          "title": "OPERATOR"
+        },
+        "owner_callsign": {
+          "$ref": "#/$defs/String",
+          "title": "OWNER_CALLSIGN"
+        },
+        "pfx": {
+          "$ref": "#/$defs/String",
+          "title": "PFX"
+        },
+        "pota_ref": {
+          "$ref": "#/$defs/POTARefList",
+          "title": "POTA_REF"
+        },
+        "precedence": {
+          "$ref": "#/$defs/String",
+          "title": "PRECEDENCE"
+        },
+        "prop_mode": {
+          "$ref": "#/$defs/enum_Propagation_Mode",
+          "title": "PROP_MODE"
+        },
+        "public_key": {
+          "$ref": "#/$defs/String",
+          "title": "PUBLIC_KEY"
+        },
+        "qrzcom_qso_download_date": {
+          "$ref": "#/$defs/Date",
+          "title": "QRZCOM_QSO_DOWNLOAD_DATE"
+        },
+        "qrzcom_qso_download_status": {
+          "$ref": "#/$defs/enum_QSO_Download_Status",
+          "title": "QRZCOM_QSO_DOWNLOAD_STATUS"
+        },
+        "qrzcom_qso_upload_date": {
+          "$ref": "#/$defs/Date",
+          "title": "QRZCOM_QSO_UPLOAD_DATE"
+        },
+        "qrzcom_qso_upload_status": {
+          "$ref": "#/$defs/enum_QSO_Upload_Status",
+          "title": "QRZCOM_QSO_UPLOAD_STATUS"
+        },
+        "qslmsg": {
+          "$ref": "#/$defs/MultilineString",
+          "title": "QSLMSG"
+        },
+        "qslmsg_intl": {
+          "$ref": "#/$defs/IntlMultilineString",
+          "title": "QSLMSG_INTL"
+        },
+        "qslmsg_rcvd": {
+          "$ref": "#/$defs/MultilineString",
+          "title": "QSLMSG_RCVD"
+        },
+        "qslrdate": {
+          "$ref": "#/$defs/Date",
+          "title": "QSLRDATE"
+        },
+        "qslsdate": {
+          "$ref": "#/$defs/Date",
+          "title": "QSLSDATE"
+        },
+        "qsl_rcvd": {
+          "$ref": "#/$defs/enum_QSL_Rcvd",
+          "title": "QSL_RCVD"
+        },
+        "qsl_rcvd_via": {
+          "$ref": "#/$defs/enum_QSL_Via",
+          "title": "QSL_RCVD_VIA"
+        },
+        "qsl_sent": {
+          "$ref": "#/$defs/enum_QSL_Sent",
+          "title": "QSL_SENT"
+        },
+        "qsl_sent_via": {
+          "$ref": "#/$defs/enum_QSL_Via",
+          "title": "QSL_SENT_VIA"
+        },
+        "qsl_via": {
+          "$ref": "#/$defs/String",
+          "title": "QSL_VIA"
+        },
+        "qso_complete": {
+          "$ref": "#/$defs/enum_QSO_Complete",
+          "title": "QSO_COMPLETE"
+        },
+        "qso_date": {
+          "$ref": "#/$defs/Date",
+          "title": "QSO_DATE"
+        },
+        "qso_date_off": {
+          "$ref": "#/$defs/Date",
+          "title": "QSO_DATE_OFF"
+        },
+        "qso_random": {
+          "$ref": "#/$defs/Boolean",
+          "title": "QSO_RANDOM"
+        },
+        "qth": {
+          "$ref": "#/$defs/String",
+          "title": "QTH"
+        },
+        "qth_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "QTH_INTL"
+        },
+        "region": {
+          "$ref": "#/$defs/enum_Region",
+          "title": "REGION"
+        },
+        "rig": {
+          "$ref": "#/$defs/MultilineString",
+          "title": "RIG"
+        },
+        "rig_intl": {
+          "$ref": "#/$defs/IntlMultilineString",
+          "title": "RIG_INTL"
+        },
+        "rst_rcvd": {
+          "$ref": "#/$defs/String",
+          "title": "RST_RCVD"
+        },
+        "rst_sent": {
+          "$ref": "#/$defs/String",
+          "title": "RST_SENT"
+        },
+        "rx_pwr": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "title": "RX_PWR"
+        },
+        "sat_mode": {
+          "$ref": "#/$defs/String",
+          "title": "SAT_MODE"
+        },
+        "sat_name": {
+          "$ref": "#/$defs/String",
+          "title": "SAT_NAME"
+        },
+        "sfi": {
+          "$ref": "#/$defs/Integer",
+          "minimum": 0,
+          "maximum": 300,
+          "title": "SFI"
+        },
+        "sig": {
+          "$ref": "#/$defs/String",
+          "title": "SIG"
+        },
+        "sig_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "SIG_INTL"
+        },
+        "sig_info": {
+          "$ref": "#/$defs/String",
+          "title": "SIG_INFO"
+        },
+        "sig_info_intl": {
+          "$ref": "#/$defs/IntlString",
+          "title": "SIG_INFO_INTL"
+        },
+        "silent_key": {
+          "$ref": "#/$defs/Boolean",
+          "title": "SILENT_KEY"
+        },
+        "skcc": {
+          "$ref": "#/$defs/String",
+          "title": "SKCC"
+        },
+        "sota_ref": {
+          "$ref": "#/$defs/SOTARef",
+          "title": "SOTA_REF"
+        },
+        "srx": {
+          "$ref": "#/$defs/Integer",
+          "minimum": 0,
+          "title": "SRX"
+        },
+        "srx_string": {
+          "$ref": "#/$defs/String",
+          "title": "SRX_STRING"
+        },
+        "state": {
+          "$ref": "#/$defs/String",
+          "title": "STATE"
+        },
+        "station_callsign": {
+          "$ref": "#/$defs/String",
+          "title": "STATION_CALLSIGN"
+        },
+        "stx": {
+          "$ref": "#/$defs/Integer",
+          "minimum": 0,
+          "title": "STX"
+        },
+        "stx_string": {
+          "$ref": "#/$defs/String",
+          "title": "STX_STRING"
+        },
+        "submode": {
+          "$ref": "#/$defs/String",
+          "title": "SUBMODE"
+        },
+        "swl": {
+          "$ref": "#/$defs/Boolean",
+          "title": "SWL"
+        },
+        "ten_ten": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "title": "TEN_TEN"
+        },
+        "time_off": {
+          "$ref": "#/$defs/Time",
+          "title": "TIME_OFF"
+        },
+        "time_on": {
+          "$ref": "#/$defs/Time",
+          "title": "TIME_ON"
+        },
+        "tx_pwr": {
+          "$ref": "#/$defs/Number",
+          "minimum": 0,
+          "title": "TX_PWR"
+        },
+        "uksmg": {
+          "$ref": "#/$defs/PositiveInteger",
+          "minimum": 1,
+          "title": "UKSMG"
+        },
+        "usaca_counties": {
+          "$ref": "#/$defs/USACACounties"
+        },
+        "ve_prov": {
+          "$ref": "#/$defs/String",
+          "title": "VE_PROV",
+          "deprecated": true
+        },
+        "vucc_grids": {
+          "$ref": "#/$defs/VUCCGrids"
+        },
+        "web": {
+          "$ref": "#/$defs/String",
+          "title": "WEB"
+        },
+        "wwff_ref": {
+          "$ref": "#/$defs/WWFFRef",
+          "title": "WWFF_REF"
+        },
+        "app": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/ExtensionName"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/CustomValues"
+          },
+          "description": "Application values keyed by PROGRAMID, then FIELDNAME. Maps ADI APP_PROGRAMID_FIELDNAME and ADX APP elements."
+        },
+        "user_defined": {
+          "$ref": "#/$defs/CustomValues",
+          "description": "Values keyed by custom field name; validate against header.user_defined in a second validation stage."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:8[Pp][Ss][Kk]125|8[Pp][Ss][Kk]125[Ff]|8[Pp][Ss][Kk]125[Ff][Ll]|8[Pp][Ss][Kk]250|8[Pp][Ss][Kk]250[Ff]|8[Pp][Ss][Kk]250[Ff][Ll]|8[Pp][Ss][Kk]500|8[Pp][Ss][Kk]500[Ff]|8[Pp][Ss][Kk]1000|8[Pp][Ss][Kk]1000[Ff]|8[Pp][Ss][Kk]1200[Ff]|[Ff][Ss][Kk]31|[Pp][Ss][Kk]10|[Pp][Ss][Kk]31|[Pp][Ss][Kk]63|[Pp][Ss][Kk]63[Ff]|[Pp][Ss][Kk]63[Rr][Cc]10|[Pp][Ss][Kk]63[Rr][Cc]20|[Pp][Ss][Kk]63[Rr][Cc]32|[Pp][Ss][Kk]63[Rr][Cc]4|[Pp][Ss][Kk]63[Rr][Cc]5|[Pp][Ss][Kk]125|[Pp][Ss][Kk]125[Rr][Cc]10|[Pp][Ss][Kk]125[Rr][Cc]12|[Pp][Ss][Kk]125[Rr][Cc]16|[Pp][Ss][Kk]125[Rr][Cc]4|[Pp][Ss][Kk]125[Rr][Cc]5|[Pp][Ss][Kk]250|[Pp][Ss][Kk]250[Rr][Cc]2|[Pp][Ss][Kk]250[Rr][Cc]3|[Pp][Ss][Kk]250[Rr][Cc]5|[Pp][Ss][Kk]250[Rr][Cc]6|[Pp][Ss][Kk]250[Rr][Cc]7|[Pp][Ss][Kk]500|[Pp][Ss][Kk]500[Rr][Cc]2|[Pp][Ss][Kk]500[Rr][Cc]3|[Pp][Ss][Kk]500[Rr][Cc]4|[Pp][Ss][Kk]800[Rr][Cc]2|[Pp][Ss][Kk]1000|[Pp][Ss][Kk]1000[Rr][Cc]2|[Pp][Ss][Kk][Aa][Mm]10|[Pp][Ss][Kk][Aa][Mm]31|[Pp][Ss][Kk][Aa][Mm]50|[Pp][Ss][Kk][Ff][Ee][Cc]31|[Qq][Pp][Ss][Kk]31|[Qq][Pp][Ss][Kk]63|[Qq][Pp][Ss][Kk]125|[Qq][Pp][Ss][Kk]250|[Qq][Pp][Ss][Kk]500|[Ss][Ii][Mm]31)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Pp][Ss][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Mm][Tt][Oo][Rr][Ff][Ee][Cc]|[Gg][Tt][Oo][Rr]|[Nn][Aa][Vv][Tt][Ee][Xx]|[Ss][Ii][Tt][Oo][Rr][Bb])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Tt][Oo][Rr])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Ss][Cc][Ii])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Rr][Tt][Tt][Yy])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Cc]4[Ff][Mm]|[Dd][Mm][Rr]|[Dd][Ss][Tt][Aa][Rr]|[Ff][Rr][Ee][Ee][Dd][Vv]|[Mm]17)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Dd][Ii][Gg][Ii][Tt][Aa][Ll][Vv][Oo][Ii][Cc][Ee])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Hh][Ii][Pp]64|[Cc][Hh][Ii][Pp]128)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Hh][Ii][Pp])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Dd][Oo][Mm]-[Mm]|[Dd][Oo][Mm]4|[Dd][Oo][Mm]5|[Dd][Oo][Mm]8|[Dd][Oo][Mm]11|[Dd][Oo][Mm]16|[Dd][Oo][Mm]22|[Dd][Oo][Mm]44|[Dd][Oo][Mm]88|[Dd][Oo][Mm][Ii][Nn][Oo][Ee][Xx]|[Dd][Oo][Mm][Ii][Nn][Oo][Ff])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Dd][Oo][Mm][Ii][Nn][Oo])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ff][Mm][Hh][Ee][Ll][Ll]|[Ff][Ss][Kk][Hh]105|[Ff][Ss][Kk][Hh]245|[Ff][Ss][Kk][Hh][Ee][Ll][Ll]|[Hh][Ee][Ll][Ll]80|[Hh][Ee][Ll][Ll][Xx]5|[Hh][Ee][Ll][Ll][Xx]9|[Hh][Ff][Ss][Kk]|[Pp][Ss][Kk][Hh][Ee][Ll][Ll]|[Ss][Ll][Oo][Ww][Hh][Ee][Ll][Ll])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Hh][Ee][Ll][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ff][Rr][Ee][Ee][Dd][Aa][Tt][Aa]|[Vv][Aa][Rr][Aa] [Hh][Ff]|[Vv][Aa][Rr][Aa] [Ss][Aa][Tt][Ee][Ll][Ll][Ii][Tt][Ee]|[Vv][Aa][Rr][Aa] [Ff][Mm] 1200|[Vv][Aa][Rr][Aa] [Ff][Mm] 9600)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Dd][Yy][Nn][Aa][Mm][Ii][Cc])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ff][Ss][Qq][Cc][Aa][Ll][Ll]|[Ff][Ss][Tt]4|[Ff][Ss][Tt]4[Ww]|[Ff][Tt]2|[Ff][Tt]4|[Jj][Ss]8|[Jj][Tt][Mm][Ss]|[Jj][Tt][Tt][Yy]|[Mm][Ff][Ss][Kk]4|[Mm][Ff][Ss][Kk]8|[Mm][Ff][Ss][Kk]11|[Mm][Ff][Ss][Kk]16|[Mm][Ff][Ss][Kk]22|[Mm][Ff][Ss][Kk]31|[Mm][Ff][Ss][Kk]32|[Mm][Ff][Ss][Kk]64|[Mm][Ff][Ss][Kk]64[Ll]|[Mm][Ff][Ss][Kk]128|[Mm][Ff][Ss][Kk]128[Ll]|[Qq]65)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Ff][Ss][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ii][Ss][Cc][Aa][Tt]-[Aa]|[Ii][Ss][Cc][Aa][Tt]-[Bb])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Ii][Ss][Cc][Aa][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Jj][Tt]4[Aa]|[Jj][Tt]4[Bb]|[Jj][Tt]4[Cc]|[Jj][Tt]4[Dd]|[Jj][Tt]4[Ee]|[Jj][Tt]4[Ff]|[Jj][Tt]4[Gg])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Jj][Tt]4)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Jj][Tt]9-1|[Jj][Tt]9-2|[Jj][Tt]9-5|[Jj][Tt]9-10|[Jj][Tt]9-30|[Jj][Tt]9[Aa]|[Jj][Tt]9[Bb]|[Jj][Tt]9[Cc]|[Jj][Tt]9[Dd]|[Jj][Tt]9[Ee]|[Jj][Tt]9[Ee] [Ff][Aa][Ss][Tt]|[Jj][Tt]9[Ff]|[Jj][Tt]9[Ff] [Ff][Aa][Ss][Tt]|[Jj][Tt]9[Gg]|[Jj][Tt]9[Gg] [Ff][Aa][Ss][Tt]|[Jj][Tt]9[Hh]|[Jj][Tt]9[Hh] [Ff][Aa][Ss][Tt])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Jj][Tt]9)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Jj][Tt]65[Aa]|[Jj][Tt]65[Bb]|[Jj][Tt]65[Bb]2|[Jj][Tt]65[Cc]|[Jj][Tt]65[Cc]2)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Jj][Tt]65)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Ss][Bb]|[Uu][Ss][Bb])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Ss][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Oo][Ll][Ii][Vv][Ii][Aa] 4/125|[Oo][Ll][Ii][Vv][Ii][Aa] 4/250|[Oo][Ll][Ii][Vv][Ii][Aa] 8/250|[Oo][Ll][Ii][Vv][Ii][Aa] 8/500|[Oo][Ll][Ii][Vv][Ii][Aa] 16/500|[Oo][Ll][Ii][Vv][Ii][Aa] 16/1000|[Oo][Ll][Ii][Vv][Ii][Aa] 32/1000)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Oo][Ll][Ii][Vv][Ii][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Oo][Pp][Ee][Rr][Aa]-[Bb][Ee][Aa][Cc][Oo][Nn]|[Oo][Pp][Ee][Rr][Aa]-[Qq][Ss][Oo])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Oo][Pp][Ee][Rr][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Pp][Aa][Cc]2|[Pp][Aa][Cc]3|[Pp][Aa][Cc]4)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Pp][Aa][Cc])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Pp][Aa][Xx]2)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Pp][Aa][Xx])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Pp][Cc][Ww])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Ww])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Qq][Rr][Aa]64[Aa]|[Qq][Rr][Aa]64[Bb]|[Qq][Rr][Aa]64[Cc]|[Qq][Rr][Aa]64[Dd]|[Qq][Rr][Aa]64[Ee])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Qq][Rr][Aa]64)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Rr][Ii][Bb][Bb][Ii][Tt]_[Pp][Ii][Xx]|[Rr][Ii][Bb][Bb][Ii][Tt]_[Ss][Mm][Ss])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Oo][Ff][Dd][Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Rr][Oo][Ss]-[Ee][Mm][Ee]|[Rr][Oo][Ss]-[Hh][Ff]|[Rr][Oo][Ss]-[Mm][Ff])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Rr][Oo][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Cc][Aa][Mm][Pp]_[Ff][Aa][Ss][Tt]|[Ss][Cc][Aa][Mm][Pp]_[Ss][Ll][Oo][Ww]|[Ss][Cc][Aa][Mm][Pp]_[Vv][Ss][Ll][Oo][Ww])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Ff][Ss][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Cc][Aa][Mm][Pp]_[Oo][Oo]|[Ss][Cc][Aa][Mm][Pp]_[Oo][Oo]_[Ss][Ll][Ww])$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Tt][Oo][Nn][Ee])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Tt][Hh][Oo][Rr]-[Mm]|[Tt][Hh][Oo][Rr]4|[Tt][Hh][Oo][Rr]5|[Tt][Hh][Oo][Rr]8|[Tt][Hh][Oo][Rr]11|[Tt][Hh][Oo][Rr]16|[Tt][Hh][Oo][Rr]22|[Tt][Hh][Oo][Rr]25[Xx]4|[Tt][Hh][Oo][Rr]50[Xx]1|[Tt][Hh][Oo][Rr]50[Xx]2|[Tt][Hh][Oo][Rr]100)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Tt][Hh][Oo][Rr])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "submode": {
+                "type": "string",
+                "pattern": "^(?:[Tt][Hh][Rr][Bb][Xx]|[Tt][Hh][Rr][Bb][Xx]1|[Tt][Hh][Rr][Bb][Xx]2|[Tt][Hh][Rr][Bb][Xx]4|[Tt][Hh][Rr][Oo][Bb]1|[Tt][Hh][Rr][Oo][Bb]2|[Tt][Hh][Rr][Oo][Bb]4)$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "submode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "type": "string",
+                "pattern": "^(?:[Tt][Hh][Rr][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 1
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Nn][Ss]|[Qq][Cc]|[Oo][Nn]|[Mm][Bb]|[Ss][Kk]|[Aa][Bb]|[Bb][Cc]|[Nn][Tt]|[Nn][Bb]|[Nn][Ll]|[Yy][Tt]|[Pp][Ee]|[Nn][Uu])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 5
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:001|002|003|004|005|006|007|008|009|010|011|012|013|014|015|016|051)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 6
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 11
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Nn])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 15
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Uu][Oo]|[Aa][Bb]|[Cc][Bb]|[Ss][Vv]|[Pp][Mm]|[Kk][Pp]|[Tt][Oo]|[Hh][Mm]|[Yy][Nn]|[Tt][Nn]|[Oo][Mm]|[Nn][Ss]|[Kk][Nn]|[Oo][Bb]|[Kk][Ee]|[Bb][Aa]|[Kk][Oo]|[Aa][Ll]|[Gg][Aa]|[Kk][Kk]|[Tt][Mm]|[Hh][Kk]|[Ee][Aa]|[Ss][Ll]|[Ee][Vv]|[Mm][Gg]|[Aa][Mm]|[Cc][Kk]|[Pp][Kk]|[Bb][Uu]|[Yy][Aa]|[Ii][Rr]|[Cc][Tt]|[Hh][Aa]|[Kk][Yy]|[Tt][Uu]|[Kk][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 21
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ii][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 27
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Ii]|[Bb][Rr]|[Hh][Rr]|[Vv][Ii]|[Mm][Aa]|[Hh][Oo]|[Hh][Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 29
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Gg][Cc]|[Tt][Ff])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 32
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Ee]|[Mm][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 50
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Oo][Ll]|[Dd][Ff]|[Cc][Mm][Xx]|[Ee][Mm][Xx]|[Mm][Ee][Xx]|[Gg][Tt][Oo]|[Gg][Uu][Aa]|[Hh][Gg][Oo]|[Hh][Ii][Dd]|[Jj][Aa][Ll]|[Mm][Ii][Cc]|[Mm][Oo][Rr]|[Nn][Aa][Yy]|[Pp][Uu][Ee]|[Qq][Rr][Oo]|[Qq][Uu][Ee]|[Tt][Ll][Xx]|[Tt][Ll][Aa]|[Vv][Ee][Rr]|[Aa][Gg][Ss]|[Aa][Gg][Uu]|[Bb][Cc]|[Bb][Cc][Nn]|[Bb][Cc][Ss]|[Cc][Hh][Hh]|[Cc][Oo][Aa]|[Dd][Gg][Oo]|[Dd][Uu][Rr]|[Nn][Ll]|[Nn][Ll][Ee]|[Ss][Ll][Pp]|[Ss][Ii][Nn]|[Ss][Oo][Nn]|[Tt][Mm][Ss]|[Tt][Aa][Mm]|[Zz][Aa][Cc]|[Cc][Aa][Mm]|[Cc][Hh][Ss]|[Cc][Hh][Pp]|[Gg][Rr][Oo]|[Oo][Aa][Xx]|[Qq][Tt][Rr]|[Rr][Oo][Oo]|[Tt][Aa][Bb]|[Yy][Uu][Cc])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 54
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Pp]|[Ll][Oo]|[Kk][Ll]|[Aa][Rr]|[Nn][Oo]|[Vv][Oo]|[Nn][Vv]|[Pp][Ss]|[Mm][Uu]|[Mm][Aa]|[Mm][Oo]|[Oo][Rr]|[Ll][Pp]|[Tt][Vv]|[Ss][Mm]|[Yy][Rr]|[Kk][Ss]|[Tt][Ll]|[Vv][Rr]|[Tt][Bb]|[Rr][Aa]|[Nn][Nn]|[Ii][Vv]|[Vv][Ll]|[Kk][Uu]|[Kk][Gg]|[Bb][Rr]|[Bb][Oo]|[Vv][Gg]|[Ss][Aa]|[Pp][Ee]|[Ss][Rr]|[Uu][Ll]|[Kk][Ii]|[Tt][Aa]|[Mm][Rr]|[Mm][Dd]|[Uu][Dd]|[Cc][Uu]|[Kk][Rr]|[Kk][Cc]|[Ss][Tt]|[Kk][Mm]|[Ss][Oo]|[Rr][Oo]|[Cc][Nn]|[Ii][Nn]|[Aa][Oo]|[Dd][Aa]|[Kk][Bb]|[Aa][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 61
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Rr]|[Ff][Jj][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 70
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:15|09|08|06|12|14|11|99|03|10|04|16|01|07|13|05)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 100
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc]|[Bb]|[Ss]|[Hh]|[Pp]|[Xx]|[Nn]|[Ee]|[Tt]|[Ww]|[Mm]|[Gg]|[Aa]|[Jj]|[Dd]|[Kk]|[Ff]|[Yy]|[Ll]|[Rr]|[Uu]|[Zz]|[Vv]|[Qq])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 108
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ee][Ss]|[Gg][Oo]|[Ss][Cc]|[Ss][Ee]|[Aa][Ll]|[Aa][Mm]|[Tt][Oo]|[Aa][Pp]|[Pp][Bb]|[Mm][Aa]|[Rr][Nn]|[Pp][Ii]|[Dd][Ff]|[Cc][Ee]|[Aa][Cc]|[Mm][Ss]|[Rr][Rr]|[Rr][Oo]|[Rr][Jj]|[Ss][Pp]|[Rr][Ss]|[Mm][Gg]|[Pp][Rr]|[Bb][Aa]|[Pp][Ee]|[Pp][Aa]|[Mm][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 110
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Hh][Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 112
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ii][Ii]|[Aa][Nn]|[Ii][Ii][Ii]|[Aa][Tt]|[Ii]|[Tt][Aa]|[Xx][Vv]|[Aa][Pp]|[Ii][Vv]|[Cc][Oo]|[Vv]|[Vv][Ss]|[Rr][Mm]|[Vv][Ii]|[Ll][Ii]|[Vv][Ii][Ii]|[Mm][Ll]|[Vv][Ii][Ii][Ii]|[Bb][Ii]|[Ii][Xx]|[Aa][Rr]|[Xx][Ii][Vv]|[Ll][Rr]|[Xx]|[Ll][Ll]|[Xx][Ii]|[Aa][Ii]|[Xx][Ii][Ii]|[Mm][Aa]|[Nn][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 118
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:22)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 126
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Kk][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 132
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:16|19|15|13|01|1|14|02|2|[Aa][Ss][Uu]|11|03|3|09|9|06|6|05|5|04|4|08|8|12|10|07|7)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 137
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa]|[Nn]|[Dd]|[Cc]|[Ee]|[Ff]|[Rr]|[Mm]|[Gg]|[Hh]|[Qq]|[Kk]|[Ll]|[Bb]|[Pp]|[Ss]|[Tt]|[Ii][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 138
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Kk][Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 142
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 144
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Oo]|[Cc][Aa]|[Ss][Jj]|[Cc][Oo]|[Ss][Oo]|[Rr][Nn]|[Pp][Aa]|[Ss][Aa]|[Aa][Rr]|[Ff][Dd]|[Ff][Ss]|[Dd][Uu]|[Tt][Aa]|[Rr][Vv]|[Mm][Aa]|[Ll][Aa]|[Rr][Oo]|[Tt][Tt]|[Cc][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 147
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Hh])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 148
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Mm]|[Aa][Nn]|[Aa][Pp]|[Aa][Rr]|[Bb][Aa]|[Bb][Oo]|[Cc][Aa]|[Cc][Oo]|[Dd][Aa]|[Dd][Cc]|[Ff][Aa]|[Gg][Uu]|[Ll][Aa]|[Mm][Ee]|[Mm][Ii]|[Mm][Oo]|[Nn][Ee]|[Pp][Oo]|[Ss][Uu]|[Tt][Aa]|[Tt][Rr]|[Vv][Aa]|[Yy][Aa]|[Zz][Uu])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 149
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Cc])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 150
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Cc][Tt]|[Nn][Ss][Ww]|[Vv][Ii][Cc]|[Qq][Ll][Dd]|[Ss][Aa]|[Ww][Aa]|[Tt][Aa][Ss]|[Nn][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 151
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Oo]|[Mm][Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 153
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 163
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Nn][Cc][Dd]|[Cc][Pp][Mm]|[Cc][Pp][Kk]|[Ee][Hh][Gg]|[Ee][Bb][Rr]|[Ee][Ss][Ww]|[Ee][Pp][Ww]|[Gg][Pp][Kk]|[Mm][Pp][Mm]|[Mm][Rr][Ll]|[Mm][Bb][Aa]|[Mm][Pp][Ll]|[Nn][Ii][Kk]|[Nn][Pp][Pp]|[Nn][Ss][Aa]|[Nn][Ss][Bb]|[Ss][Aa][Nn]|[Ss][Hh][Mm]|[Ww][Pp][Dd]|[Ww][Hh][Mm]|[Ww][Bb][Rr]|[Ww][Bb][Kk]|[Hh][Ll][Aa]|[Jj][Ww][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 170
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Uu][Kk]|[Bb][Oo][Pp]|[Nn][Tt][Ll]|[Ww][Kk][Oo]|[Gg][Ii][Ss]|[Hh][Kk][Bb]|[Mm][Ww][Tt]|[Tt][Kk][Ii]|[Ww][Gg][Nn]|[Cc][Aa][Nn]|[Mm][Bb][Hh]|[Nn][Ss][Nn]|[Tt][Aa][Ss]|[Ww][Tt][Cc]|[Oo][Tt][Aa]|[Ss][Tt][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 177
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 192
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Oo])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 206
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ww][Cc]|[Hh][Aa]|[Jj][Oo]|[Ss][Cc]|[Ss][Ll]|[Tt][Aa]|[Zz][Ee]|[Aa][Mm]|[Bb][Ll]|[Bb][Nn]|[Gg][Dd]|[Gg][Ff]|[Hh][Ll]|[Hh][Oo]|[Kk][Oo]|[Kk][Rr]|[Kk][Ss]|[Ll][Ff]|[Mm][Dd]|[Mm][Ee]|[Mm][Ii]|[Nn][Kk]|[Pp][Cc]|[Pp][Ll]|[Ss][Bb]|[Ss][Ww]|[Tt][Uu]|[Ww][Bb]|[Ww][Nn]|[Ww][Tt]|[Ww][Uu]|[Ww][Yy]|[Zz][Tt]|[Ee][Cc]|[Ee][Uu]|[Gg][Ss]|[Jj][Ee]|[Mm][Aa]|[Nn][Dd]|[Oo][Pp]|[Oo][Ww]|[Bb][Rr]|[Ee][Ff]|[Ff][Rr]|[Gg][Mm]|[Gg][Rr]|[Kk][Ii]|[Ll][Cc]|[Ll][Ll]|[Pp][Ee]|[Rr][Ii]|[Rr][Oo]|[Ss][Dd]|[Ss][Ee]|[Ss][Rr]|[Uu][Uu]|[Vv][Bb]|[Ww][Ee]|[Ww][Ll]|[Bb][Aa]|[Bb][Mm]|[Dd][Ll]|[Ff][Bb]|[Ff][Ff]|[Gg][Bb]|[Gg][Cc]|[Gg][Uu]|[Hh][Bb]|[Hh][Ff]|[Jj][Uu]|[Kk][Ff]|[Ll][Bb]|[Ll][Ee]|[Ll][Ii]|[Ll][Nn]|[Mm][Tt]|[Mm][Uu]|[Mm][Zz]|[Rr][Aa]|[Ss][Oo]|[Vv][Oo]|[Ww][Zz]|[Ii][Cc]|[Ii][Ll]|[Ii][Mm]|[Kk][Bb]|[Kk][Uu]|[Ll][Aa]|[Ll][Zz]|[Rr][Ee]|[Ss][Zz]|[Ff][Ee]|[Hh][Ee]|[Kk][Cc]|[Kk][Ll]|[Ss][Pp]|[Ss][Vv]|[Vv][Ii]|[Vv][Kk]|[Vv][Ll]|[Ww][Oo]|[Bb][Cc]|[Bb][Zz]|[Dd][Oo]|[Ff][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 209
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Nn]|[Bb][Rr]|[Bb][Ww]|[Hh][Tt]|[Ll][Bb]|[Ll][Gg]|[Nn][Mm]|[Ll][Uu]|[Oo][Vv]|[Vv][Bb]|[Ww][Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 212
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Bb][Uu]|[Ss][Ll]|[Yy][Aa]|[Ss][Oo]|[Hh][Aa]|[Kk][Aa]|[Ss][Zz]|[Pp][Aa]|[Pp][Dd]|[Ss][Mm]|[Bb][Ll]|[Kk][Dd]|[Pp][Kk]|[Ss][Ff]|[Gg][Aa]|[Ll][Vv]|[Pp][Ll]|[Vv][Tt]|[Mm][Nn]|[Vv][Dd]|[Vv][Rr]|[Rr][Zz]|[Rr][Ss]|[Ss][Ss]|[Tt][Aa]|[Dd][Oo]|[Ss][Nn]|[Vv][Nn])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 214
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:2[Aa]|2[Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 221
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:015|020|025|030|035|040|042|050|055|060|065|070|076|080|101|147)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 224
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:100|102|103|104|105|106|107|108|109|110|111|112|115|116|117|119|120|122|123|124|126|128|129|130|131|132|133|134|135|136|137|138|139|140|141|142|143|144|145|147|148|149|150|151|152|154|156|157|158|159|160|161|162|163|164|165|167|168|169|170|171|172|173|174|175|176|178|179|180|181|182|183|184|185|186|187|188|189|190|191|192|193|194|195|196|198|199|201|202|204|205|206|207|208|209|210|211|212|213|214|215|216|217|218|220|221|222|223|224|225|226|227|228|229|231|233|234|235|236|238|241|242|243|301|303|304|305|306|307|308|309|310|311|312|313|314|315|316|318|319|320|321|322|323|324|325|326|327|328|329|330|331|332|333|334|335|336|337|340|341|342|344|345|346|347|348|349|350|351|352|353|354|355|356|357|358|402|403|404|405|407|408|409|410|411|412|413|414|415|417|418|419|420|421|422|423|424|425|426|427|428|502|503|504|505|506|507|509|510|511|513|514|515|516|518|519|520|521|522|523|525|526|527|528|530|531|532|601|602|603|604|605|606|607|608|609|610|611|612|613|614|615|616|617|619|620|621|622|623|624|625|626|627|628|629|630|632|633|634|635|636|637|638|639|640|641|642|643|644|645|646|647|648|649|650|651|652|653|654|655|656|657|658|659|660|661|662|663|664|665|666|668|669|670|671|672|673|675|676|677|678|679|680|681|682|683|684|685|686|687|688|689|690|692|701|702|703|704|705|706|707|708|709|710|711|712|713|714|715|716|717|718|719|720|721|722|723|724|725|726|727|728|729|730|731|732|733|734|735|736|737|738|739|740|741|742|743|801|802|803|804|805|806|807|808|810|811|812|813|814|815|816|817|818|819|820|821|822|823|824|825|826|827|828|829|830|831|832|833|834|835|836|837|838|839|840|841|842|843|844|846|847|848|849|850|851|852|853|901|902|903|904|905|907|908|909|910|911|912|913|914|915|916|917|918|919|920|921|922|923)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 225
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Aa]|[Cc][Ii]|[Ss][Uu]|[Mm][Dd]|[Nn][Uu]|[Oo][Gg]|[Oo][Rr]|[Oo][Tt]|[Ss][Ss]|[Vv][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 227
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 230
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Bb][Bb]|[Bb][Ee]|[Bb][Ww]|[Bb][Yy]|[Hh][Bb]|[Hh][Ee]|[Hh][Hh]|[Mm][Vv]|[Nn][Ii]|[Nn][Ww]|[Rr][Pp]|[Ss][Ll]|[Ss][Hh]|[Ss][Nn]|[Ss][Tt]|[Tt][Hh])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 239
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Gg][Yy]|[Vv][Aa]|[Zz][Aa]|[Kk][Oo]|[Vv][Ee]|[Bb][Aa]|[Ss][Oo]|[Tt][Oo]|[Ff][Ee]|[Bb][Pp]|[Hh][Ee]|[Nn][Gg]|[Pp][Ee]|[Ss][Zz]|[Bb][Ee]|[Bb][Nn]|[Cc][Ss]|[Bb][Oo]|[Hh][Bb]|[Ss][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 245
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Ww]|[Cc][Nn]|[Cc][Ee]|[Cc]|[Cc][Oo]|[Dd][Ll]|[Dd]|[Gg]|[Kk][Yy]|[Kk][Ee]|[Kk][Kk]|[Ll][Ss]|[Ll][Mm]|[Ll][Kk]|[Ll][Dd]|[Ll][Hh]|[Mm][Oo]|[Mm][Hh]|[Mm][Nn]|[Oo][Yy]|[Rr][Nn]|[Ss][Oo]|[Tt][Aa]|[Ww][Dd]|[Ww][Hh]|[Ww][Xx]|[Ww][Ww])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 248
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Gg][Ee]|[Ii][Mm]|[Ss][Pp]|[Ss][Vv]|[Aa][Ll]|[Aa][Tt]|[Bb][Ii]|[Cc][Nn]|[Nn][Oo]|[Tt][Oo]|[Vv][Bb]|[Vv][Cc]|[Aa][Oo]|[Bb][Gg]|[Bb][Ss]|[Cc][Oo]|[Cc][Rr]|[Ll][Cc]|[Ll][Oo]|[Mm][Bb]|[Mm][Nn]|[Mm][Ii]|[Pp][Vv]|[Ss][Oo]|[Vv][Aa]|[Bb][Ll]|[Pp][Dd]|[Rr][Oo]|[Tt][Vv]|[Vv][Ee]|[Vv][Rr]|[Vv][Ii]|[Bb][Zz]|[Tt][Nn]|[Gg][Oo]|[Pp][Nn]|[Tt][Ss]|[Uu][Dd]|[Bb][Oo]|[Ff][Ee]|[Ff][Oo]|[Ff][Cc]|[Mm][Oo]|[Pp][Rr]|[Pp][Cc]|[Rr][Aa]|[Rr][Ee]|[Rr][Nn]|[Aa][Rr]|[Ff][Ii]|[Gg][Rr]|[Ll][Ii]|[Ll][Uu]|[Mm][Ss]|[Pp][Tt]|[Pp][Ii]|[Pp][Oo]|[Ss][Ii]|[Cc][Hh]|[Aa][Qq]|[Pp][Ee]|[Tt][Ee]|[Aa][Nn]|[Aa][Pp]|[Ff][Mm]|[Mm][Cc]|[Pp][Ss]|[Pp][Uu]|[Mm][Tt]|[Pp][Zz]|[Bb][Aa]|[Bb][Tt]|[Bb][Rr]|[Ff][Gg]|[Ll][Ee]|[Tt][Aa]|[Cc][Zz]|[Cc][Ss]|[Kk][Rr]|[Rr][Cc]|[Vv][Vv]|[Aa][Vv]|[Bb][Nn]|[Cc][Ee]|[Nn][Aa]|[Ss][Aa]|[Ii][Ss]|[Cc][Bb]|[Ff][Rr]|[Ll][Tt]|[Rr][Ii]|[Rr][Mm]|[Vv][Tt]|[Pp][Gg]|[Tt][Rr]|[Aa][Gg]|[Cc][Ll]|[Cc][Tt]|[Ee][Nn]|[Mm][Ee]|[Pp][Aa]|[Rr][Gg]|[Ss][Rr]|[Tt][Pp])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 259
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:21)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 266
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:42|34|15|18|03|11|54|50|38|46|30)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 256
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 263
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Dd][Rr]|[Ff][Rr]|[Gg][Rr]|[Nn][Bb]|[Oo][Vv]|[Zz][Hh]|[Ff][Ll]|[Gg][Dd]|[Gg][Ee]|[Ll][Bb]|[Ll][Ii]|[Nn][Hh]|[Uu][Tt]|[Zz][Ll]|[Zz][Ee])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 269
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Zz]|[Ff]|[Pp]|[Bb]|[Ww]|[Jj]|[Oo]|[Rr]|[Dd]|[Uu]|[Cc]|[Ss]|[Kk]|[Ll]|[Gg]|[Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 272
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Vv]|[Bb][Jj]|[Bb][Rr]|[Bb][Gg]|[Cc][Bb]|[Cc][Oo]|[Ee][Vv]|[Ff][Rr]|[Gg][Dd]|[Ll][Rr]|[Ll][Xx]|[Pp][Gg]|[Pp][Tt]|[Ss][Rr]|[Ss][Tt]|[Vv][Cc]|[Vv][Rr]|[Vv][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 275
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Rr]|[Cc][Ss]|[Hh][Dd]|[Tt][Mm]|[Bb][Uu]|[Bb]|[Ii][Ff]|[Bb][Rr]|[Cc][Tt]|[Gg][Ll]|[Tt][Ll]|[Vv][Nn]|[Aa][Bb]|[Bb][Hh]|[Bb][Nn]|[Cc][Jj]|[Mm][Mm]|[Ss][Jj]|[Ss][Mm]|[Bb][Vv]|[Cc][Vv]|[Hh][Rr]|[Mm][Ss]|[Ss][Bb]|[Aa][Gg]|[Dd][Jj]|[Gg][Jj]|[Mm][Hh]|[Oo][Tt]|[Vv][Ll]|[Bb][Cc]|[Bb][Tt]|[Ii][Ss]|[Nn][Tt]|[Ss][Vv]|[Vv][Ss]|[Bb][Zz]|[Cc][Ll]|[Dd][Bb]|[Gg][Rr]|[Ii][Ll]|[Pp][Hh]|[Tt][Rr])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 281
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Vv]|[Bb][Uu]|[Cc]|[Ll][Ee]|[Ll][Oo]|[Ll][Uu]|[Oo]|[Oo][Uu]|[Oo][Rr]|[Pp]|[Pp][Oo]|[Ss]|[Ss][Aa]|[Ss][Gg]|[Ss][Oo]|[Vv][Aa]|[Zz][Aa]|[Bb][Ii]|[Hh][Uu]|[Nn][Aa]|[Ss][Ss]|[Tt][Ee]|[Vv][Ii]|[Zz]|[Bb]|[Gg][Ii]|[Ll]|[Tt]|[Bb][Aa]|[Cc][Cc]|[Cc][Rr]|[Cc][Uu]|[Gg][Uu]|[Mm]|[Tt][Oo]|[Aa]|[Aa][Bb]|[Cc][Ss]|[Mm][Uu]|[Vv]|[Aa][Ll]|[Cc][Aa]|[Cc][Oo]|[Gg][Rr]|[Hh]|[Jj]|[Mm][Aa]|[Ss][Ee])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 284
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Bb]|[Ii]|[Bb][Dd]|[Aa][Cc]|[Xx]|[Zz]|[Yy]|[Ww]|[Ss]|[Oo]|[Tt]|[Ee]|[Dd]|[Cc]|[Uu]|[Nn]|[Kk]|[Ff]|[Hh]|[Gg]|[Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 287
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Gg]|[Aa][Rr]|[Aa][Ii]|[Bb][Ll]|[Bb][Ss]|[Bb][Ee]|[Ff][Rr]|[Gg][Ee]|[Gg][Ll]|[Gg][Rr]|[Jj][Uu]|[Ll][Uu]|[Nn][Ee]|[Nn][Ww]|[Oo][Ww]|[Ss][Hh]|[Ss][Zz]|[Ss][Oo]|[Ss][Gg]|[Tt][Ii]|[Tt][Gg]|[Uu][Rr]|[Vv][Dd]|[Vv][Ss]|[Zz][Hh]|[Zz][Gg])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 288
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Uu]|[Tt][Ee]|[Cc][Hh]|[Zz][Aa]|[Dd][Nn]|[Oo][Dd]|[Hh][Ee]|[Pp][Oo]|[Dd][Oo]|[Rr][Ii]|[Hh][Aa]|[Ll][Uu]|[Vv][Ii]|[Vv][Oo]|[Zz][Pp]|[Cc][Rr]|[Ii][Ff]|[Hh][Mm]|[Kk][Vv]|[Kk][Oo]|[Kk][Ii]|[Ll][Vv]|[Zz][Hh]|[Cc][Nn]|[Nn][Ii]|[Kk][Rr]|[Ss][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 291
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Tt]|[Mm][Ee]|[Mm][Aa]|[Nn][Hh]|[Rr][Ii]|[Vv][Tt]|[Nn][Jj]|[Nn][Yy]|[Dd][Ee]|[Dd][Cc]|[Mm][Dd]|[Pp][Aa]|[Aa][Ll]|[Ff][Ll]|[Gg][Aa]|[Kk][Yy]|[Nn][Cc]|[Ss][Cc]|[Tt][Nn]|[Vv][Aa]|[Aa][Rr]|[Ll][Aa]|[Mm][Ss]|[Nn][Mm]|[Oo][Kk]|[Tt][Xx]|[Cc][Aa]|[Aa][Zz]|[Ii][Dd]|[Mm][Tt]|[Nn][Vv]|[Oo][Rr]|[Uu][Tt]|[Ww][Aa]|[Ww][Yy]|[Mm][Ii]|[Oo][Hh]|[Ww][Vv]|[Ii][Ll]|[Ii][Nn]|[Ww][Ii]|[Cc][Oo]|[Ii][Aa]|[Kk][Ss]|[Mm][Nn]|[Mm][Oo]|[Nn][Ee]|[Nn][Dd]|[Ss][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 318
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Hh]|[Bb][Jj]|[Cc][Qq]|[Ff][Jj]|[Gg][Dd]|[Gg][Ss]|[Gg][Xx]|[Gg][Zz]|[Hh][Aa]|[Hh][Bb]|[Hh][Ee]|[Hh][Ii]|[Hh][Ll]|[Hh][Nn]|[Jj][Ll]|[Jj][Ss]|[Jj][Xx]|[Ll][Nn]|[Nn][Mm]|[Nn][Xx]|[Qq][Hh]|[Ss][Cc]|[Ss][Dd]|[Ss][Hh]|[Ss][Nn]|[Ss][Xx]|[Tt][Jj]|[Xx][Jj]|[Xx][Zz]|[Yy][Nn]|[Zz][Jj])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 324
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Pp]|[Aa][Rr]|[Aa][Ss]|[Bb][Rr]|[Cc][Hh]|[Cc][Gg]|[Dd][Dd]|[Dd][Ll]|[Dd][Nn]|[Gg][Aa]|[Gg][Jj]|[Hh][Rr]|[Hh][Pp]|[Jj][Kk]|[Jj][Hh]|[Kk][Aa]|[Kk][Ll]|[Ll][Aa]|[Mm][Pp]|[Mm][Hh]|[Mm][Nn]|[Mm][Ll]|[Mm][Zz]|[Nn][Ll]|[Oo][Dd]|[Pp][Yy]|[Pp][Bb]|[Rr][Jj]|[Ss][Kk]|[Tt][Nn]|[Tt][Gg]|[Tt][Rr]|[Uu][Pp]|[Uu][Kk]|[Ww][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 339
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:12|16|14|11|13|15|10|17|20|19|21|18|27|22|24|25|23|26|35|31|32|34|33|38|36|39|37|40|46|43|45|42|44|47|41|04|02|07|03|06|05|01|29|30|28|09|08)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 375
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Uu][Rr]|[Bb][Tt][Gg]|[Cc][Aa][Vv]|[Ll][Aa][Gg]|[Mm][Aa][Dd]|[Mm][Dd][Cc]|[Mm][Dd][Rr]|[Pp][Ll][Ww]|[Qq][Uu][Ee]|[Rr][Ii][Zz]|[Rr][Oo][Mm]|[Ii][Ll][Nn]|[Ii][Ll][Ss]|[Ll][Uu][Nn]|[Pp][Aa][Nn]|[Bb][Tt][Nn]|[Cc][Aa][Gg]|[Ii][Ss][Aa]|[Nn][Uu][Vv]|[Qq][Uu][Ii]|[Aa][Bb][Rr]|[Aa][Pp][Aa]|[Bb][Ee][Nn]|[Ii][Ff][Uu]|[Kk][Aa][Ll]|[Mm][Oo][Uu]|[Bb][Aa][Nn]|[Bb][Uu][Ll]|[Nn][Uu][Ee]|[Pp][Aa][Mm]|[Tt][Aa][Rr]|[Zz][Mm][Bb]|[Aa][Ll][Bb]|[Cc][Aa][Nn]|[Cc][Aa][Ss]|[Cc][Aa][Tt]|[Mm][Aa][Ss]|[Ss][Oo][Rr]|[Bb][Ii][Ll]|[Ee][Aa][Ss]|[Ll][Ee][Yy]|[Nn][Ss][Aa]|[Ss][Ll][Ee]|[Ww][Ss][Aa]|[Aa][Kk][Ll]|[Aa][Nn][Tt]|[Cc][Aa][Pp]|[Gg][Uu][Ii]|[Ii][Ll][Ii]|[Nn][Ee][Cc]|[Bb][Oo][Hh]|[Cc][Ee][Bb]|[Nn][Ee][Rr]|[Ss][Ii][Gg]|[Zz][Aa][Nn]|[Zz][Aa][Ss]|[Zz][Ss][Ii]|[Nn][Cc][Oo]|[Ss][Uu][Kk]|[Ss][Aa][Rr]|[Ss][Cc][Oo]|[Bb][Aa][Ss]|[Ll][Aa][Ss]|[Mm][Aa][Gg]|[Ss][Ll][Uu]|[Tt][Aa][Ww]|[Ll][Aa][Nn]|[Bb][Uu][Kk]|[Cc][Aa][Mm]|[Mm][Ss][Cc]|[Mm][Ss][Rr]|[Cc][Oo][Mm]|[Dd][Aa][Vv]|[Dd][Aa][Ss]|[Dd][Aa][Oo]|[Aa][Gg][Nn]|[Aa][Gg][Ss]|[Ss][Uu][Nn]|[Ss][Uu][Rr])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 386
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Hh][Aa]|[Cc][Yy][Ii]|[Cc][Yy][Qq]|[Hh][Ss][Zz]|[Hh][Ss][Qq]|[Hh][Uu][Aa]|[Kk][Hh][Hh]|[Kk][Ee][Ee]|[Kk][Ii][Nn]|[Ll][Ii][Ee]|[Mm][Ii][Aa]|[Nn][Aa][Nn]|[Nn][Ww][Tt]|[Pp][Ee][Nn]|[Pp][Ii][Ff]|[Tt][Xx][Gg]|[Tt][Nn][Nn]|[Tt][Pp][Ee]|[Tt][Tt][Tt]|[Tt][Aa][Oo]|[Ii][Ll][Aa]|[Yy][Uu][Nn])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 497
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 503
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Pp][Aa]|[Aa][Pp][Bb]|[Aa][Pp][Cc]|[Aa][Pp][Dd]|[Aa][Pp][Ee]|[Aa][Pp][Ff]|[Aa][Pp][Gg]|[Aa][Pp][Hh]|[Aa][Pp][Ii]|[Aa][Pp][Jj]|[Bb][Bb][Nn]|[Bb][Bb][Ee]|[Bb][Kk][Dd]|[Bb][Kk][Oo]|[Bb][Kk][Hh]|[Bb][Mm][Ee]|[Bb][Mm][Bb]|[Bb][Nn][Yy]|[Bb][Pp][Zz]|[Bb][Pp][Vv]|[Bb][Pp][Bb]|[Bb][Rr][Aa]|[Cc][Bb][Uu]|[Cc][Cc][Kk]|[Cc][Jj][Hh]|[Cc][Pp][Ee]|[Cc][Pp][Ii]|[Cc][Pp][Rr]|[Cc][Ss][Tt]|[Cc][Tt][Aa]|[Dd][Dd][Oo]|[Dd][Cc][Hh]|[Dd][Kk][Vv]|[Dd][Kk][Ll]|[Dd][Pp][Mm]|[Dd][Pp][Jj]|[Dd][Pp][Ss]|[Dd][Rr][Oo]|[Dd][Ss][Oo]|[Dd][Tt][Aa]|[Ee][Cc][Ll]|[Ee][Dd][Ee]|[Ee][Cc][Hh]|[Ee][Jj][Aa]|[Ee][Ll][Ii]|[Ee][Ll][Tt]|[Ee][Ll][Oo]|[Ee][Mm][Oo]|[Ee][Tt][Ee]|[Ee][Uu][Ll]|[Ff][Hh][Bb]|[Ff][Hh][Kk]|[Ff][Cc][Rr]|[Ff][Jj][Ii]|[Ff][Nn][Aa]|[Ff][Pp][Aa]|[Ff][Rr][Kk]|[Ff][Ss][Ee]|[Ff][Ss][Vv]|[Ff][Tt][Rr]|[Ff][Uu][Oo]|[Gg][Bb][Ll]|[Gg][Bb][Mm]|[Gg][Bb][Vv]|[Gg][Bb][Rr]|[Gg][Hh][Oo]|[Gg][Jj][Ii]|[Gg][Kk][Rr]|[Gg][Pp][Rr]|[Gg][Tt][Rr]|[Gg][Uu][Hh]|[Gg][Vv][Yy]|[Gg][Zz][Ll]|[Gg][Zz][Nn]|[Gg][Zz][Ss]|[Hh][Bb][Rr]|[Hh][Ff][Mm]|[Hh][Jj][Ee]|[Hh][Kk][Aa]|[Hh][Nn][Jj]|[Hh][Oo][Ll]|[Hh][Oo][Pp]|[Hh][Oo][Ss]|[Hh][Pp][Rr]|[Hh][Ss][Uu]|[Hh][Vv][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dxcc": {
+                "const": 504
+              }
+            },
+            "required": [
+              "dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "pattern": "^(?:[Bb][Aa][Aa]|[Bb][Aa][Bb]|[Bb][Aa][Cc]|[Bb][Aa][Dd]|[Bb][Aa][Ee]|[Mm][Aa][Ll]|[Pp][Ee][Zz]|[Ss][Ee][Nn]|[Dd][Ss][Tt]|[Gg][Aa][Ll]|[Hh][Ll][Oo]|[Pp][Ii][Ee]|[Ss][Ee][Aa]|[Ss][Kk][Aa]|[Tt][Rr][Nn]|[Bb][Aa][Nn]|[Ii][Ll][Aa]|[Mm][Yy][Jj]|[Nn][Mm][Vv]|[Pp][Aa][Rr]|[Pp][Bb][Yy]|[Pp][Rr][Ii]|[Pp][Uu][Cc]|[Tt][Nn][Cc]|[Kk][Oo][Mm]|[Ll][Vv][Cc]|[Nn][Ii][Tt]|[Nn][Zz][Aa]|[Ss][Aa][Ll]|[Tt][Oo][Pp]|[Zz][Mm][Oo]|[Bb][Yy][Tt]|[Cc][Aa][Dd]|[Dd][Kk][Uu]|[Kk][Nn][Mm]|[Ll][Mm][Ii]|[Mm][Aa][Rr]|[Nn][Aa][Mm]|[Rr][Uu][Zz]|[Tt][Tt][Ee]|[Tt][Vv][Rr]|[Zz][Ii][Ll]|[Bb][Bb][Yy]|[Bb][Ss][Tt]|[Bb][Rr][Ee]|[Dd][Ee][Tt]|[Kk][Rr][Uu]|[Ll][Uu][Cc]|[Pp][Oo][Ll]|[Rr][Ee][Vv]|[Rr][Ss][Oo]|[Vv][Kk][Rr]|[Zz][Aa][Rr]|[Zz][Ii][Hh]|[Zz][Vv][Oo]|[Gg][Ee][Ll]|[Kk][Ee][Aa]|[Kk][Ee][Bb]|[Kk][Ee][Cc]|[Kk][Ee][Dd]|[Kk][Ee][Oo]|[Mm][Ii][Cc]|[Rr][Oo][Zz]|[Ss][Oo][Bb]|[Ss][Nn][Vv]|[Tt][Rr][Ee]|[Bb][Aa][Rr]|[Hh][Uu][Mm]|[Kk][Ee][Zz]|[Ll][Ee][Vv]|[Mm][Ee][Dd]|[Pp][Oo][Pp]|[Pp][Rr][Ee]|[Ss][Aa][Bb]|[Ss][Nn][Ii]|[Ss][Ll][Uu]|[Ss][Tt][Rr]|[Ss][Vv][Ii]|[Vv][Rr][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 1
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Nn][Ss]|[Qq][Cc]|[Oo][Nn]|[Mm][Bb]|[Ss][Kk]|[Aa][Bb]|[Bb][Cc]|[Nn][Tt]|[Nn][Bb]|[Nn][Ll]|[Yy][Tt]|[Pp][Ee]|[Nn][Uu])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 5
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:001|002|003|004|005|006|007|008|009|010|011|012|013|014|015|016|051)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 6
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 11
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Nn])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 15
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Uu][Oo]|[Aa][Bb]|[Cc][Bb]|[Ss][Vv]|[Pp][Mm]|[Kk][Pp]|[Tt][Oo]|[Hh][Mm]|[Yy][Nn]|[Tt][Nn]|[Oo][Mm]|[Nn][Ss]|[Kk][Nn]|[Oo][Bb]|[Kk][Ee]|[Bb][Aa]|[Kk][Oo]|[Aa][Ll]|[Gg][Aa]|[Kk][Kk]|[Tt][Mm]|[Hh][Kk]|[Ee][Aa]|[Ss][Ll]|[Ee][Vv]|[Mm][Gg]|[Aa][Mm]|[Cc][Kk]|[Pp][Kk]|[Bb][Uu]|[Yy][Aa]|[Ii][Rr]|[Cc][Tt]|[Hh][Aa]|[Kk][Yy]|[Tt][Uu]|[Kk][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 21
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ii][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 27
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Ii]|[Bb][Rr]|[Hh][Rr]|[Vv][Ii]|[Mm][Aa]|[Hh][Oo]|[Hh][Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 29
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Gg][Cc]|[Tt][Ff])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 32
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Ee]|[Mm][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 50
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Oo][Ll]|[Dd][Ff]|[Cc][Mm][Xx]|[Ee][Mm][Xx]|[Mm][Ee][Xx]|[Gg][Tt][Oo]|[Gg][Uu][Aa]|[Hh][Gg][Oo]|[Hh][Ii][Dd]|[Jj][Aa][Ll]|[Mm][Ii][Cc]|[Mm][Oo][Rr]|[Nn][Aa][Yy]|[Pp][Uu][Ee]|[Qq][Rr][Oo]|[Qq][Uu][Ee]|[Tt][Ll][Xx]|[Tt][Ll][Aa]|[Vv][Ee][Rr]|[Aa][Gg][Ss]|[Aa][Gg][Uu]|[Bb][Cc]|[Bb][Cc][Nn]|[Bb][Cc][Ss]|[Cc][Hh][Hh]|[Cc][Oo][Aa]|[Dd][Gg][Oo]|[Dd][Uu][Rr]|[Nn][Ll]|[Nn][Ll][Ee]|[Ss][Ll][Pp]|[Ss][Ii][Nn]|[Ss][Oo][Nn]|[Tt][Mm][Ss]|[Tt][Aa][Mm]|[Zz][Aa][Cc]|[Cc][Aa][Mm]|[Cc][Hh][Ss]|[Cc][Hh][Pp]|[Gg][Rr][Oo]|[Oo][Aa][Xx]|[Qq][Tt][Rr]|[Rr][Oo][Oo]|[Tt][Aa][Bb]|[Yy][Uu][Cc])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 54
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Pp]|[Ll][Oo]|[Kk][Ll]|[Aa][Rr]|[Nn][Oo]|[Vv][Oo]|[Nn][Vv]|[Pp][Ss]|[Mm][Uu]|[Mm][Aa]|[Mm][Oo]|[Oo][Rr]|[Ll][Pp]|[Tt][Vv]|[Ss][Mm]|[Yy][Rr]|[Kk][Ss]|[Tt][Ll]|[Vv][Rr]|[Tt][Bb]|[Rr][Aa]|[Nn][Nn]|[Ii][Vv]|[Vv][Ll]|[Kk][Uu]|[Kk][Gg]|[Bb][Rr]|[Bb][Oo]|[Vv][Gg]|[Ss][Aa]|[Pp][Ee]|[Ss][Rr]|[Uu][Ll]|[Kk][Ii]|[Tt][Aa]|[Mm][Rr]|[Mm][Dd]|[Uu][Dd]|[Cc][Uu]|[Kk][Rr]|[Kk][Cc]|[Ss][Tt]|[Kk][Mm]|[Ss][Oo]|[Rr][Oo]|[Cc][Nn]|[Ii][Nn]|[Aa][Oo]|[Dd][Aa]|[Kk][Bb]|[Aa][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 61
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Rr]|[Ff][Jj][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 70
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:15|09|08|06|12|14|11|99|03|10|04|16|01|07|13|05)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 100
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc]|[Bb]|[Ss]|[Hh]|[Pp]|[Xx]|[Nn]|[Ee]|[Tt]|[Ww]|[Mm]|[Gg]|[Aa]|[Jj]|[Dd]|[Kk]|[Ff]|[Yy]|[Ll]|[Rr]|[Uu]|[Zz]|[Vv]|[Qq])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 108
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ee][Ss]|[Gg][Oo]|[Ss][Cc]|[Ss][Ee]|[Aa][Ll]|[Aa][Mm]|[Tt][Oo]|[Aa][Pp]|[Pp][Bb]|[Mm][Aa]|[Rr][Nn]|[Pp][Ii]|[Dd][Ff]|[Cc][Ee]|[Aa][Cc]|[Mm][Ss]|[Rr][Rr]|[Rr][Oo]|[Rr][Jj]|[Ss][Pp]|[Rr][Ss]|[Mm][Gg]|[Pp][Rr]|[Bb][Aa]|[Pp][Ee]|[Pp][Aa]|[Mm][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 110
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Hh][Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 112
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ii][Ii]|[Aa][Nn]|[Ii][Ii][Ii]|[Aa][Tt]|[Ii]|[Tt][Aa]|[Xx][Vv]|[Aa][Pp]|[Ii][Vv]|[Cc][Oo]|[Vv]|[Vv][Ss]|[Rr][Mm]|[Vv][Ii]|[Ll][Ii]|[Vv][Ii][Ii]|[Mm][Ll]|[Vv][Ii][Ii][Ii]|[Bb][Ii]|[Ii][Xx]|[Aa][Rr]|[Xx][Ii][Vv]|[Ll][Rr]|[Xx]|[Ll][Ll]|[Xx][Ii]|[Aa][Ii]|[Xx][Ii][Ii]|[Mm][Aa]|[Nn][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 118
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:22)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 126
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Kk][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 132
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:16|19|15|13|01|1|14|02|2|[Aa][Ss][Uu]|11|03|3|09|9|06|6|05|5|04|4|08|8|12|10|07|7)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 137
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa]|[Nn]|[Dd]|[Cc]|[Ee]|[Ff]|[Rr]|[Mm]|[Gg]|[Hh]|[Qq]|[Kk]|[Ll]|[Bb]|[Pp]|[Ss]|[Tt]|[Ii][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 138
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Kk][Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 142
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 144
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Oo]|[Cc][Aa]|[Ss][Jj]|[Cc][Oo]|[Ss][Oo]|[Rr][Nn]|[Pp][Aa]|[Ss][Aa]|[Aa][Rr]|[Ff][Dd]|[Ff][Ss]|[Dd][Uu]|[Tt][Aa]|[Rr][Vv]|[Mm][Aa]|[Ll][Aa]|[Rr][Oo]|[Tt][Tt]|[Cc][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 147
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Hh])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 148
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Mm]|[Aa][Nn]|[Aa][Pp]|[Aa][Rr]|[Bb][Aa]|[Bb][Oo]|[Cc][Aa]|[Cc][Oo]|[Dd][Aa]|[Dd][Cc]|[Ff][Aa]|[Gg][Uu]|[Ll][Aa]|[Mm][Ee]|[Mm][Ii]|[Mm][Oo]|[Nn][Ee]|[Pp][Oo]|[Ss][Uu]|[Tt][Aa]|[Tt][Rr]|[Vv][Aa]|[Yy][Aa]|[Zz][Uu])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 149
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Cc])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 150
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Cc][Tt]|[Nn][Ss][Ww]|[Vv][Ii][Cc]|[Qq][Ll][Dd]|[Ss][Aa]|[Ww][Aa]|[Tt][Aa][Ss]|[Nn][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 151
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ll][Oo]|[Mm][Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 153
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 163
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Nn][Cc][Dd]|[Cc][Pp][Mm]|[Cc][Pp][Kk]|[Ee][Hh][Gg]|[Ee][Bb][Rr]|[Ee][Ss][Ww]|[Ee][Pp][Ww]|[Gg][Pp][Kk]|[Mm][Pp][Mm]|[Mm][Rr][Ll]|[Mm][Bb][Aa]|[Mm][Pp][Ll]|[Nn][Ii][Kk]|[Nn][Pp][Pp]|[Nn][Ss][Aa]|[Nn][Ss][Bb]|[Ss][Aa][Nn]|[Ss][Hh][Mm]|[Ww][Pp][Dd]|[Ww][Hh][Mm]|[Ww][Bb][Rr]|[Ww][Bb][Kk]|[Hh][Ll][Aa]|[Jj][Ww][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 170
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Uu][Kk]|[Bb][Oo][Pp]|[Nn][Tt][Ll]|[Ww][Kk][Oo]|[Gg][Ii][Ss]|[Hh][Kk][Bb]|[Mm][Ww][Tt]|[Tt][Kk][Ii]|[Ww][Gg][Nn]|[Cc][Aa][Nn]|[Mm][Bb][Hh]|[Nn][Ss][Nn]|[Tt][Aa][Ss]|[Ww][Tt][Cc]|[Oo][Tt][Aa]|[Ss][Tt][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 177
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 192
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Oo])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 206
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ww][Cc]|[Hh][Aa]|[Jj][Oo]|[Ss][Cc]|[Ss][Ll]|[Tt][Aa]|[Zz][Ee]|[Aa][Mm]|[Bb][Ll]|[Bb][Nn]|[Gg][Dd]|[Gg][Ff]|[Hh][Ll]|[Hh][Oo]|[Kk][Oo]|[Kk][Rr]|[Kk][Ss]|[Ll][Ff]|[Mm][Dd]|[Mm][Ee]|[Mm][Ii]|[Nn][Kk]|[Pp][Cc]|[Pp][Ll]|[Ss][Bb]|[Ss][Ww]|[Tt][Uu]|[Ww][Bb]|[Ww][Nn]|[Ww][Tt]|[Ww][Uu]|[Ww][Yy]|[Zz][Tt]|[Ee][Cc]|[Ee][Uu]|[Gg][Ss]|[Jj][Ee]|[Mm][Aa]|[Nn][Dd]|[Oo][Pp]|[Oo][Ww]|[Bb][Rr]|[Ee][Ff]|[Ff][Rr]|[Gg][Mm]|[Gg][Rr]|[Kk][Ii]|[Ll][Cc]|[Ll][Ll]|[Pp][Ee]|[Rr][Ii]|[Rr][Oo]|[Ss][Dd]|[Ss][Ee]|[Ss][Rr]|[Uu][Uu]|[Vv][Bb]|[Ww][Ee]|[Ww][Ll]|[Bb][Aa]|[Bb][Mm]|[Dd][Ll]|[Ff][Bb]|[Ff][Ff]|[Gg][Bb]|[Gg][Cc]|[Gg][Uu]|[Hh][Bb]|[Hh][Ff]|[Jj][Uu]|[Kk][Ff]|[Ll][Bb]|[Ll][Ee]|[Ll][Ii]|[Ll][Nn]|[Mm][Tt]|[Mm][Uu]|[Mm][Zz]|[Rr][Aa]|[Ss][Oo]|[Vv][Oo]|[Ww][Zz]|[Ii][Cc]|[Ii][Ll]|[Ii][Mm]|[Kk][Bb]|[Kk][Uu]|[Ll][Aa]|[Ll][Zz]|[Rr][Ee]|[Ss][Zz]|[Ff][Ee]|[Hh][Ee]|[Kk][Cc]|[Kk][Ll]|[Ss][Pp]|[Ss][Vv]|[Vv][Ii]|[Vv][Kk]|[Vv][Ll]|[Ww][Oo]|[Bb][Cc]|[Bb][Zz]|[Dd][Oo]|[Ff][Kk])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 209
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Nn]|[Bb][Rr]|[Bb][Ww]|[Hh][Tt]|[Ll][Bb]|[Ll][Gg]|[Nn][Mm]|[Ll][Uu]|[Oo][Vv]|[Vv][Bb]|[Ww][Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 212
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Bb][Uu]|[Ss][Ll]|[Yy][Aa]|[Ss][Oo]|[Hh][Aa]|[Kk][Aa]|[Ss][Zz]|[Pp][Aa]|[Pp][Dd]|[Ss][Mm]|[Bb][Ll]|[Kk][Dd]|[Pp][Kk]|[Ss][Ff]|[Gg][Aa]|[Ll][Vv]|[Pp][Ll]|[Vv][Tt]|[Mm][Nn]|[Vv][Dd]|[Vv][Rr]|[Rr][Zz]|[Rr][Ss]|[Ss][Ss]|[Tt][Aa]|[Dd][Oo]|[Ss][Nn]|[Vv][Nn])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 214
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:2[Aa]|2[Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 221
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:015|020|025|030|035|040|042|050|055|060|065|070|076|080|101|147)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 224
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:100|102|103|104|105|106|107|108|109|110|111|112|115|116|117|119|120|122|123|124|126|128|129|130|131|132|133|134|135|136|137|138|139|140|141|142|143|144|145|147|148|149|150|151|152|154|156|157|158|159|160|161|162|163|164|165|167|168|169|170|171|172|173|174|175|176|178|179|180|181|182|183|184|185|186|187|188|189|190|191|192|193|194|195|196|198|199|201|202|204|205|206|207|208|209|210|211|212|213|214|215|216|217|218|220|221|222|223|224|225|226|227|228|229|231|233|234|235|236|238|241|242|243|301|303|304|305|306|307|308|309|310|311|312|313|314|315|316|318|319|320|321|322|323|324|325|326|327|328|329|330|331|332|333|334|335|336|337|340|341|342|344|345|346|347|348|349|350|351|352|353|354|355|356|357|358|402|403|404|405|407|408|409|410|411|412|413|414|415|417|418|419|420|421|422|423|424|425|426|427|428|502|503|504|505|506|507|509|510|511|513|514|515|516|518|519|520|521|522|523|525|526|527|528|530|531|532|601|602|603|604|605|606|607|608|609|610|611|612|613|614|615|616|617|619|620|621|622|623|624|625|626|627|628|629|630|632|633|634|635|636|637|638|639|640|641|642|643|644|645|646|647|648|649|650|651|652|653|654|655|656|657|658|659|660|661|662|663|664|665|666|668|669|670|671|672|673|675|676|677|678|679|680|681|682|683|684|685|686|687|688|689|690|692|701|702|703|704|705|706|707|708|709|710|711|712|713|714|715|716|717|718|719|720|721|722|723|724|725|726|727|728|729|730|731|732|733|734|735|736|737|738|739|740|741|742|743|801|802|803|804|805|806|807|808|810|811|812|813|814|815|816|817|818|819|820|821|822|823|824|825|826|827|828|829|830|831|832|833|834|835|836|837|838|839|840|841|842|843|844|846|847|848|849|850|851|852|853|901|902|903|904|905|907|908|909|910|911|912|913|914|915|916|917|918|919|920|921|922|923)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 225
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Aa]|[Cc][Ii]|[Ss][Uu]|[Mm][Dd]|[Nn][Uu]|[Oo][Gg]|[Oo][Rr]|[Oo][Tt]|[Ss][Ss]|[Vv][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 227
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 230
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Bb][Bb]|[Bb][Ee]|[Bb][Ww]|[Bb][Yy]|[Hh][Bb]|[Hh][Ee]|[Hh][Hh]|[Mm][Vv]|[Nn][Ii]|[Nn][Ww]|[Rr][Pp]|[Ss][Ll]|[Ss][Hh]|[Ss][Nn]|[Ss][Tt]|[Tt][Hh])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 239
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Gg][Yy]|[Vv][Aa]|[Zz][Aa]|[Kk][Oo]|[Vv][Ee]|[Bb][Aa]|[Ss][Oo]|[Tt][Oo]|[Ff][Ee]|[Bb][Pp]|[Hh][Ee]|[Nn][Gg]|[Pp][Ee]|[Ss][Zz]|[Bb][Ee]|[Bb][Nn]|[Cc][Ss]|[Bb][Oo]|[Hh][Bb]|[Ss][Aa])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 245
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Ww]|[Cc][Nn]|[Cc][Ee]|[Cc]|[Cc][Oo]|[Dd][Ll]|[Dd]|[Gg]|[Kk][Yy]|[Kk][Ee]|[Kk][Kk]|[Ll][Ss]|[Ll][Mm]|[Ll][Kk]|[Ll][Dd]|[Ll][Hh]|[Mm][Oo]|[Mm][Hh]|[Mm][Nn]|[Oo][Yy]|[Rr][Nn]|[Ss][Oo]|[Tt][Aa]|[Ww][Dd]|[Ww][Hh]|[Ww][Xx]|[Ww][Ww])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 248
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Gg][Ee]|[Ii][Mm]|[Ss][Pp]|[Ss][Vv]|[Aa][Ll]|[Aa][Tt]|[Bb][Ii]|[Cc][Nn]|[Nn][Oo]|[Tt][Oo]|[Vv][Bb]|[Vv][Cc]|[Aa][Oo]|[Bb][Gg]|[Bb][Ss]|[Cc][Oo]|[Cc][Rr]|[Ll][Cc]|[Ll][Oo]|[Mm][Bb]|[Mm][Nn]|[Mm][Ii]|[Pp][Vv]|[Ss][Oo]|[Vv][Aa]|[Bb][Ll]|[Pp][Dd]|[Rr][Oo]|[Tt][Vv]|[Vv][Ee]|[Vv][Rr]|[Vv][Ii]|[Bb][Zz]|[Tt][Nn]|[Gg][Oo]|[Pp][Nn]|[Tt][Ss]|[Uu][Dd]|[Bb][Oo]|[Ff][Ee]|[Ff][Oo]|[Ff][Cc]|[Mm][Oo]|[Pp][Rr]|[Pp][Cc]|[Rr][Aa]|[Rr][Ee]|[Rr][Nn]|[Aa][Rr]|[Ff][Ii]|[Gg][Rr]|[Ll][Ii]|[Ll][Uu]|[Mm][Ss]|[Pp][Tt]|[Pp][Ii]|[Pp][Oo]|[Ss][Ii]|[Cc][Hh]|[Aa][Qq]|[Pp][Ee]|[Tt][Ee]|[Aa][Nn]|[Aa][Pp]|[Ff][Mm]|[Mm][Cc]|[Pp][Ss]|[Pp][Uu]|[Mm][Tt]|[Pp][Zz]|[Bb][Aa]|[Bb][Tt]|[Bb][Rr]|[Ff][Gg]|[Ll][Ee]|[Tt][Aa]|[Cc][Zz]|[Cc][Ss]|[Kk][Rr]|[Rr][Cc]|[Vv][Vv]|[Aa][Vv]|[Bb][Nn]|[Cc][Ee]|[Nn][Aa]|[Ss][Aa]|[Ii][Ss]|[Cc][Bb]|[Ff][Rr]|[Ll][Tt]|[Rr][Ii]|[Rr][Mm]|[Vv][Tt]|[Pp][Gg]|[Tt][Rr]|[Aa][Gg]|[Cc][Ll]|[Cc][Tt]|[Ee][Nn]|[Mm][Ee]|[Pp][Aa]|[Rr][Gg]|[Ss][Rr]|[Tt][Pp])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 259
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:21)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 266
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:42|34|15|18|03|11|54|50|38|46|30)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 256
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Mm][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 263
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Dd][Rr]|[Ff][Rr]|[Gg][Rr]|[Nn][Bb]|[Oo][Vv]|[Zz][Hh]|[Ff][Ll]|[Gg][Dd]|[Gg][Ee]|[Ll][Bb]|[Ll][Ii]|[Nn][Hh]|[Uu][Tt]|[Zz][Ll]|[Zz][Ee])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 269
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Zz]|[Ff]|[Pp]|[Bb]|[Ww]|[Jj]|[Oo]|[Rr]|[Dd]|[Uu]|[Cc]|[Ss]|[Kk]|[Ll]|[Gg]|[Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 272
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Vv]|[Bb][Jj]|[Bb][Rr]|[Bb][Gg]|[Cc][Bb]|[Cc][Oo]|[Ee][Vv]|[Ff][Rr]|[Gg][Dd]|[Ll][Rr]|[Ll][Xx]|[Pp][Gg]|[Pp][Tt]|[Ss][Rr]|[Ss][Tt]|[Vv][Cc]|[Vv][Rr]|[Vv][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 275
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Rr]|[Cc][Ss]|[Hh][Dd]|[Tt][Mm]|[Bb][Uu]|[Bb]|[Ii][Ff]|[Bb][Rr]|[Cc][Tt]|[Gg][Ll]|[Tt][Ll]|[Vv][Nn]|[Aa][Bb]|[Bb][Hh]|[Bb][Nn]|[Cc][Jj]|[Mm][Mm]|[Ss][Jj]|[Ss][Mm]|[Bb][Vv]|[Cc][Vv]|[Hh][Rr]|[Mm][Ss]|[Ss][Bb]|[Aa][Gg]|[Dd][Jj]|[Gg][Jj]|[Mm][Hh]|[Oo][Tt]|[Vv][Ll]|[Bb][Cc]|[Bb][Tt]|[Ii][Ss]|[Nn][Tt]|[Ss][Vv]|[Vv][Ss]|[Bb][Zz]|[Cc][Ll]|[Dd][Bb]|[Gg][Rr]|[Ii][Ll]|[Pp][Hh]|[Tt][Rr])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 281
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Vv]|[Bb][Uu]|[Cc]|[Ll][Ee]|[Ll][Oo]|[Ll][Uu]|[Oo]|[Oo][Uu]|[Oo][Rr]|[Pp]|[Pp][Oo]|[Ss]|[Ss][Aa]|[Ss][Gg]|[Ss][Oo]|[Vv][Aa]|[Zz][Aa]|[Bb][Ii]|[Hh][Uu]|[Nn][Aa]|[Ss][Ss]|[Tt][Ee]|[Vv][Ii]|[Zz]|[Bb]|[Gg][Ii]|[Ll]|[Tt]|[Bb][Aa]|[Cc][Cc]|[Cc][Rr]|[Cc][Uu]|[Gg][Uu]|[Mm]|[Tt][Oo]|[Aa]|[Aa][Bb]|[Cc][Ss]|[Mm][Uu]|[Vv]|[Aa][Ll]|[Cc][Aa]|[Cc][Oo]|[Gg][Rr]|[Hh]|[Jj]|[Mm][Aa]|[Ss][Ee])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 284
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Bb]|[Ii]|[Bb][Dd]|[Aa][Cc]|[Xx]|[Zz]|[Yy]|[Ww]|[Ss]|[Oo]|[Tt]|[Ee]|[Dd]|[Cc]|[Uu]|[Nn]|[Kk]|[Ff]|[Hh]|[Gg]|[Mm])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 287
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Gg]|[Aa][Rr]|[Aa][Ii]|[Bb][Ll]|[Bb][Ss]|[Bb][Ee]|[Ff][Rr]|[Gg][Ee]|[Gg][Ll]|[Gg][Rr]|[Jj][Uu]|[Ll][Uu]|[Nn][Ee]|[Nn][Ww]|[Oo][Ww]|[Ss][Hh]|[Ss][Zz]|[Ss][Oo]|[Ss][Gg]|[Tt][Ii]|[Tt][Gg]|[Uu][Rr]|[Vv][Dd]|[Vv][Ss]|[Zz][Hh]|[Zz][Gg])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 288
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Ss][Uu]|[Tt][Ee]|[Cc][Hh]|[Zz][Aa]|[Dd][Nn]|[Oo][Dd]|[Hh][Ee]|[Pp][Oo]|[Dd][Oo]|[Rr][Ii]|[Hh][Aa]|[Ll][Uu]|[Vv][Ii]|[Vv][Oo]|[Zz][Pp]|[Cc][Rr]|[Ii][Ff]|[Hh][Mm]|[Kk][Vv]|[Kk][Oo]|[Kk][Ii]|[Ll][Vv]|[Zz][Hh]|[Cc][Nn]|[Nn][Ii]|[Kk][Rr]|[Ss][Ll])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 291
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Tt]|[Mm][Ee]|[Mm][Aa]|[Nn][Hh]|[Rr][Ii]|[Vv][Tt]|[Nn][Jj]|[Nn][Yy]|[Dd][Ee]|[Dd][Cc]|[Mm][Dd]|[Pp][Aa]|[Aa][Ll]|[Ff][Ll]|[Gg][Aa]|[Kk][Yy]|[Nn][Cc]|[Ss][Cc]|[Tt][Nn]|[Vv][Aa]|[Aa][Rr]|[Ll][Aa]|[Mm][Ss]|[Nn][Mm]|[Oo][Kk]|[Tt][Xx]|[Cc][Aa]|[Aa][Zz]|[Ii][Dd]|[Mm][Tt]|[Nn][Vv]|[Oo][Rr]|[Uu][Tt]|[Ww][Aa]|[Ww][Yy]|[Mm][Ii]|[Oo][Hh]|[Ww][Vv]|[Ii][Ll]|[Ii][Nn]|[Ww][Ii]|[Cc][Oo]|[Ii][Aa]|[Kk][Ss]|[Mm][Nn]|[Mm][Oo]|[Nn][Ee]|[Nn][Dd]|[Ss][Dd])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 318
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Hh]|[Bb][Jj]|[Cc][Qq]|[Ff][Jj]|[Gg][Dd]|[Gg][Ss]|[Gg][Xx]|[Gg][Zz]|[Hh][Aa]|[Hh][Bb]|[Hh][Ee]|[Hh][Ii]|[Hh][Ll]|[Hh][Nn]|[Jj][Ll]|[Jj][Ss]|[Jj][Xx]|[Ll][Nn]|[Nn][Mm]|[Nn][Xx]|[Qq][Hh]|[Ss][Cc]|[Ss][Dd]|[Ss][Hh]|[Ss][Nn]|[Ss][Xx]|[Tt][Jj]|[Xx][Jj]|[Xx][Zz]|[Yy][Nn]|[Zz][Jj])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 324
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Pp]|[Aa][Rr]|[Aa][Ss]|[Bb][Rr]|[Cc][Hh]|[Cc][Gg]|[Dd][Dd]|[Dd][Ll]|[Dd][Nn]|[Gg][Aa]|[Gg][Jj]|[Hh][Rr]|[Hh][Pp]|[Jj][Kk]|[Jj][Hh]|[Kk][Aa]|[Kk][Ll]|[Ll][Aa]|[Mm][Pp]|[Mm][Hh]|[Mm][Nn]|[Mm][Ll]|[Mm][Zz]|[Nn][Ll]|[Oo][Dd]|[Pp][Yy]|[Pp][Bb]|[Rr][Jj]|[Ss][Kk]|[Tt][Nn]|[Tt][Gg]|[Tt][Rr]|[Uu][Pp]|[Uu][Kk]|[Ww][Bb])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 339
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:12|16|14|11|13|15|10|17|20|19|21|18|27|22|24|25|23|26|35|31|32|34|33|38|36|39|37|40|46|43|45|42|44|47|41|04|02|07|03|06|05|01|29|30|28|09|08)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 375
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Uu][Rr]|[Bb][Tt][Gg]|[Cc][Aa][Vv]|[Ll][Aa][Gg]|[Mm][Aa][Dd]|[Mm][Dd][Cc]|[Mm][Dd][Rr]|[Pp][Ll][Ww]|[Qq][Uu][Ee]|[Rr][Ii][Zz]|[Rr][Oo][Mm]|[Ii][Ll][Nn]|[Ii][Ll][Ss]|[Ll][Uu][Nn]|[Pp][Aa][Nn]|[Bb][Tt][Nn]|[Cc][Aa][Gg]|[Ii][Ss][Aa]|[Nn][Uu][Vv]|[Qq][Uu][Ii]|[Aa][Bb][Rr]|[Aa][Pp][Aa]|[Bb][Ee][Nn]|[Ii][Ff][Uu]|[Kk][Aa][Ll]|[Mm][Oo][Uu]|[Bb][Aa][Nn]|[Bb][Uu][Ll]|[Nn][Uu][Ee]|[Pp][Aa][Mm]|[Tt][Aa][Rr]|[Zz][Mm][Bb]|[Aa][Ll][Bb]|[Cc][Aa][Nn]|[Cc][Aa][Ss]|[Cc][Aa][Tt]|[Mm][Aa][Ss]|[Ss][Oo][Rr]|[Bb][Ii][Ll]|[Ee][Aa][Ss]|[Ll][Ee][Yy]|[Nn][Ss][Aa]|[Ss][Ll][Ee]|[Ww][Ss][Aa]|[Aa][Kk][Ll]|[Aa][Nn][Tt]|[Cc][Aa][Pp]|[Gg][Uu][Ii]|[Ii][Ll][Ii]|[Nn][Ee][Cc]|[Bb][Oo][Hh]|[Cc][Ee][Bb]|[Nn][Ee][Rr]|[Ss][Ii][Gg]|[Zz][Aa][Nn]|[Zz][Aa][Ss]|[Zz][Ss][Ii]|[Nn][Cc][Oo]|[Ss][Uu][Kk]|[Ss][Aa][Rr]|[Ss][Cc][Oo]|[Bb][Aa][Ss]|[Ll][Aa][Ss]|[Mm][Aa][Gg]|[Ss][Ll][Uu]|[Tt][Aa][Ww]|[Ll][Aa][Nn]|[Bb][Uu][Kk]|[Cc][Aa][Mm]|[Mm][Ss][Cc]|[Mm][Ss][Rr]|[Cc][Oo][Mm]|[Dd][Aa][Vv]|[Dd][Aa][Ss]|[Dd][Aa][Oo]|[Aa][Gg][Nn]|[Aa][Gg][Ss]|[Ss][Uu][Nn]|[Ss][Uu][Rr])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 386
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Cc][Hh][Aa]|[Cc][Yy][Ii]|[Cc][Yy][Qq]|[Hh][Ss][Zz]|[Hh][Ss][Qq]|[Hh][Uu][Aa]|[Kk][Hh][Hh]|[Kk][Ee][Ee]|[Kk][Ii][Nn]|[Ll][Ii][Ee]|[Mm][Ii][Aa]|[Nn][Aa][Nn]|[Nn][Ww][Tt]|[Pp][Ee][Nn]|[Pp][Ii][Ff]|[Tt][Xx][Gg]|[Tt][Nn][Nn]|[Tt][Pp][Ee]|[Tt][Tt][Tt]|[Tt][Aa][Oo]|[Ii][Ll][Aa]|[Yy][Uu][Nn])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 497
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21)$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 503
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Aa][Pp][Aa]|[Aa][Pp][Bb]|[Aa][Pp][Cc]|[Aa][Pp][Dd]|[Aa][Pp][Ee]|[Aa][Pp][Ff]|[Aa][Pp][Gg]|[Aa][Pp][Hh]|[Aa][Pp][Ii]|[Aa][Pp][Jj]|[Bb][Bb][Nn]|[Bb][Bb][Ee]|[Bb][Kk][Dd]|[Bb][Kk][Oo]|[Bb][Kk][Hh]|[Bb][Mm][Ee]|[Bb][Mm][Bb]|[Bb][Nn][Yy]|[Bb][Pp][Zz]|[Bb][Pp][Vv]|[Bb][Pp][Bb]|[Bb][Rr][Aa]|[Cc][Bb][Uu]|[Cc][Cc][Kk]|[Cc][Jj][Hh]|[Cc][Pp][Ee]|[Cc][Pp][Ii]|[Cc][Pp][Rr]|[Cc][Ss][Tt]|[Cc][Tt][Aa]|[Dd][Dd][Oo]|[Dd][Cc][Hh]|[Dd][Kk][Vv]|[Dd][Kk][Ll]|[Dd][Pp][Mm]|[Dd][Pp][Jj]|[Dd][Pp][Ss]|[Dd][Rr][Oo]|[Dd][Ss][Oo]|[Dd][Tt][Aa]|[Ee][Cc][Ll]|[Ee][Dd][Ee]|[Ee][Cc][Hh]|[Ee][Jj][Aa]|[Ee][Ll][Ii]|[Ee][Ll][Tt]|[Ee][Ll][Oo]|[Ee][Mm][Oo]|[Ee][Tt][Ee]|[Ee][Uu][Ll]|[Ff][Hh][Bb]|[Ff][Hh][Kk]|[Ff][Cc][Rr]|[Ff][Jj][Ii]|[Ff][Nn][Aa]|[Ff][Pp][Aa]|[Ff][Rr][Kk]|[Ff][Ss][Ee]|[Ff][Ss][Vv]|[Ff][Tt][Rr]|[Ff][Uu][Oo]|[Gg][Bb][Ll]|[Gg][Bb][Mm]|[Gg][Bb][Vv]|[Gg][Bb][Rr]|[Gg][Hh][Oo]|[Gg][Jj][Ii]|[Gg][Kk][Rr]|[Gg][Pp][Rr]|[Gg][Tt][Rr]|[Gg][Uu][Hh]|[Gg][Vv][Yy]|[Gg][Zz][Ll]|[Gg][Zz][Nn]|[Gg][Zz][Ss]|[Hh][Bb][Rr]|[Hh][Ff][Mm]|[Hh][Jj][Ee]|[Hh][Kk][Aa]|[Hh][Nn][Jj]|[Hh][Oo][Ll]|[Hh][Oo][Pp]|[Hh][Oo][Ss]|[Hh][Pp][Rr]|[Hh][Ss][Uu]|[Hh][Vv][Ss])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_dxcc": {
+                "const": 504
+              }
+            },
+            "required": [
+              "my_dxcc"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_state": {
+                "type": "string",
+                "pattern": "^(?:[Bb][Aa][Aa]|[Bb][Aa][Bb]|[Bb][Aa][Cc]|[Bb][Aa][Dd]|[Bb][Aa][Ee]|[Mm][Aa][Ll]|[Pp][Ee][Zz]|[Ss][Ee][Nn]|[Dd][Ss][Tt]|[Gg][Aa][Ll]|[Hh][Ll][Oo]|[Pp][Ii][Ee]|[Ss][Ee][Aa]|[Ss][Kk][Aa]|[Tt][Rr][Nn]|[Bb][Aa][Nn]|[Ii][Ll][Aa]|[Mm][Yy][Jj]|[Nn][Mm][Vv]|[Pp][Aa][Rr]|[Pp][Bb][Yy]|[Pp][Rr][Ii]|[Pp][Uu][Cc]|[Tt][Nn][Cc]|[Kk][Oo][Mm]|[Ll][Vv][Cc]|[Nn][Ii][Tt]|[Nn][Zz][Aa]|[Ss][Aa][Ll]|[Tt][Oo][Pp]|[Zz][Mm][Oo]|[Bb][Yy][Tt]|[Cc][Aa][Dd]|[Dd][Kk][Uu]|[Kk][Nn][Mm]|[Ll][Mm][Ii]|[Mm][Aa][Rr]|[Nn][Aa][Mm]|[Rr][Uu][Zz]|[Tt][Tt][Ee]|[Tt][Vv][Rr]|[Zz][Ii][Ll]|[Bb][Bb][Yy]|[Bb][Ss][Tt]|[Bb][Rr][Ee]|[Dd][Ee][Tt]|[Kk][Rr][Uu]|[Ll][Uu][Cc]|[Pp][Oo][Ll]|[Rr][Ee][Vv]|[Rr][Ss][Oo]|[Vv][Kk][Rr]|[Zz][Aa][Rr]|[Zz][Ii][Hh]|[Zz][Vv][Oo]|[Gg][Ee][Ll]|[Kk][Ee][Aa]|[Kk][Ee][Bb]|[Kk][Ee][Cc]|[Kk][Ee][Dd]|[Kk][Ee][Oo]|[Mm][Ii][Cc]|[Rr][Oo][Zz]|[Ss][Oo][Bb]|[Ss][Nn][Vv]|[Tt][Rr][Ee]|[Bb][Aa][Rr]|[Hh][Uu][Mm]|[Kk][Ee][Zz]|[Ll][Ee][Vv]|[Mm][Ee][Dd]|[Pp][Oo][Pp]|[Pp][Rr][Ee]|[Ss][Aa][Bb]|[Ss][Nn][Ii]|[Ss][Ll][Uu]|[Ss][Tt][Rr]|[Ss][Vv][Ii]|[Vv][Rr][Tt])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "qslrdate": true
+            },
+            "required": [
+              "qslrdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "qsl_rcvd"
+            ],
+            "properties": {
+              "qsl_rcvd": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Ii]|[Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "qslsdate": true
+            },
+            "required": [
+              "qslsdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "qsl_sent"
+            ],
+            "properties": {
+              "qsl_sent": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Qq]|[Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dcl_qslrdate": true
+            },
+            "required": [
+              "dcl_qslrdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "dcl_qsl_rcvd"
+            ],
+            "properties": {
+              "dcl_qsl_rcvd": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Ii]|[Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "dcl_qslsdate": true
+            },
+            "required": [
+              "dcl_qslsdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "dcl_qsl_sent"
+            ],
+            "properties": {
+              "dcl_qsl_sent": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Qq]|[Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "eqsl_qslrdate": true
+            },
+            "required": [
+              "eqsl_qslrdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "eqsl_qsl_rcvd"
+            ],
+            "properties": {
+              "eqsl_qsl_rcvd": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Ii]|[Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "eqsl_qslsdate": true
+            },
+            "required": [
+              "eqsl_qslsdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "eqsl_qsl_sent"
+            ],
+            "properties": {
+              "eqsl_qsl_sent": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Qq]|[Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "lotw_qslrdate": true
+            },
+            "required": [
+              "lotw_qslrdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "lotw_qsl_rcvd"
+            ],
+            "properties": {
+              "lotw_qsl_rcvd": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Ii]|[Vv])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "lotw_qslsdate": true
+            },
+            "required": [
+              "lotw_qslsdate"
+            ]
+          },
+          "then": {
+            "required": [
+              "lotw_qsl_sent"
+            ],
+            "properties": {
+              "lotw_qsl_sent": {
+                "type": "string",
+                "pattern": "^(?:[Yy]|[Qq]|[Ii])$(?![\\s\\S])"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "gridsquare_ext": true
+            },
+            "required": [
+              "gridsquare_ext"
+            ]
+          },
+          "then": {
+            "properties": {
+              "gridsquare": {
+                "minLength": 8,
+                "maxLength": 8
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "my_gridsquare_ext": true
+            },
+            "required": [
+              "my_gridsquare_ext"
+            ]
+          },
+          "then": {
+            "properties": {
+              "my_gridsquare": {
+                "minLength": 8,
+                "maxLength": 8
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

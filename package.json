@@ -1,0 +1,16 @@
+{
+  "name": "adif-json-schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "JSON-native amateur radio interchange schema covering ADIF/ADX 3.1.8",
+  "scripts": {
+    "generate": "node scripts/generate-schema.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.8.1"
+  }
+}
